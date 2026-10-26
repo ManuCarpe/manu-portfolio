@@ -1,0 +1,239 @@
+---
+order: 2
+title: When your users are a kid and their guardian, in the same app
+summary: Designed Drip, an Australian micro-investing app where kids learn to invest and parents stay in control.
+cover: ../../assets/case-studies/cover-family.png
+coverAlt: A teenager laughing with her parents, all holding phones
+hero: ../../assets/case-studies/drip/hero.png
+heroAlt: A teenager laughing with her parents, all holding phones
+client: Drip Invest
+year: "2023"
+tags:
+  - End-to-end product design
+  - Fintech
+  - Consumer Mobile
+  - Dual-user design
+about:
+  - Designed Drip, an Australian micro-investing app where kids learn to invest and parents stay in control.
+  - "Launched in Australia in 2022, through BetterLabs corporate venture fund. Joined Raiz Invest (ASX: RZI) in July 2025. Press coverage from Savings.com.au and Business News Australia. 3–4 month end-to-end design engagement both user flows designed from scratch — kid and guardian"
+---
+
+import Section from '../../components/case-study/Section.astro';
+import Shot from '../../components/case-study/Shot.astro';
+import Lead from '../../components/case-study/Lead.astro';
+import Statement from '../../components/case-study/Statement.astro';
+import Divider from '../../components/case-study/Divider.astro';
+
+import Gallery from '../../components/case-study/Gallery.astro';
+import OptionsCarousel from '../../components/case-study/OptionsCarousel.astro';
+import InviteToast from '../../components/case-study/InviteToast.astro';
+
+import brandHero from '../../assets/case-studies/drip/brand-hero.png';
+import brandPoster from '../../assets/case-studies/drip/brand-poster.png';
+import brandGuidelines from '../../assets/case-studies/drip/brand-guidelines.png';
+import brandPosters from '../../assets/case-studies/drip/brand-posters.png';
+import brandIcons from '../../assets/case-studies/drip/brand-icons.png';
+import optionDetail from '../../assets/case-studies/drip/option-detail.png';
+import articulation from '../../assets/case-studies/drip/articulation.png';
+
+{/*
+  How to write a case study (the title and hero image come from the frontmatter above):
+  - Section with a title             big heading on the left, content on the right — also listed in the side menu
+  - Section with level={3}           smaller sub-heading
+  - <Shot src={image} />             an image;  <Shot />  a grey placeholder until the screen is ready
+  - <Lead>                           the black takeaway line
+  - <Gallery rows={[[a], [b, c]]} /> full-width image rows (images in a row share one height)
+  - <Statement>                      a large closing statement
+  - <Divider />                      a thin line between chapters
+  - Plain text, **bold**, and blank lines between paragraphs work as normal.
+*/}
+
+<Section title="What Drip is">
+  Drip is an Australian micro-investing app for kids under 17, supervised by a parent or guardian. Kids learn to invest with small amounts of real money. Parents stay in control — approving the account, setting limits, and overseeing what their kid does inside the app.
+
+  Drip launched in Australia in 2022 and was covered by Savings.com.au as "educational micro-investing designed for kids and adults." In July 2025, Drip joined ASX-listed Raiz Invest. This case study covers the version I designed at launch.
+
+  <Lead>The product exists to grow financial literacy in the next generation. The hypothesis: if you teach someone to invest when they're twelve, they're a different kind of adult investor at thirty.</Lead>
+</Section>
+
+<Gallery
+  rows={[
+    [{ src: brandHero, alt: 'A girl holding out a phone showing the Drip welcome screen, with DRIP INVEST lettering behind her' }],
+    [
+      { src: brandPoster, alt: 'Drip poster: Drip into your future' },
+      { src: brandGuidelines, alt: 'Drip brand guidelines cover, 2023' },
+    ],
+    [
+      { src: brandPosters, alt: 'Three Drip social posters' },
+      { src: brandIcons, alt: 'Drip 3D icons: key, drop, chart and bell' },
+    ],
+  ]}
+/>
+
+<Section title="The design problem - two users, one app">
+  Drip wasn't built to be another investment app. It was built as a mission: increase financial literacy in the next generation of Australians. If the mission worked, the business worked.
+
+  <Lead>Two users. Two mental models. One product that had to serve both without compromising either.</Lead>
+</Section>
+
+<Section level={3} title="The kid">
+  The kid needed the app to feel like something they'd actually open. If the kid flow felt like a bank app, no one would use it — and the mission would quietly fail.
+</Section>
+
+<Section level={3} title="The parent">
+  The parent needed the opposite. For a parent to hand a financial app to their child, it had to feel serious, trustworthy, auditable. They're the ones taking the risk.
+</Section>
+
+<Divider />
+
+<Section title="Who I talked to">
+  Before design started, I ran user interview sessions with Australian parents. The group wasn't homogeneous.
+
+  Some had investment backgrounds and wanted their kids introduced to the space early — guided, with guardrails. Others saw their kids drawn to technology and wanted to channel that interest into something with long-term value.
+
+  <Lead>Different starting points. Same instinct — a safe way to let their kid participate in something they considered important.</Lead>
+</Section>
+
+<Divider />
+
+<Section title="Designing the kid flow">
+  The thesis for the kid flow was simple: every screen the kid sees should be a teaching moment, disguised as a product moment. If a twelve-year-old is going to open a financial app, the app has to earn its place in their day. If it also teaches them how markets work along the way, the mission is working.
+</Section>
+
+<Section level={3} title="The kid can start first and invite parents">
+  A teen can download the app and begin before their parent has an account. If the parent hasn't set one up yet, the teen enters the parent's mobile number and the app sends them an invite. The kid is often the one drawn to the idea
+
+  <Lead>the parent is the gatekeeper, not necessarily the originator.</Lead>
+
+  <InviteToast />
+</Section>
+
+<Section level={3} title="Investment options as themes, not SKUs.">
+  Investment options presented as themes, not SKUs. The browse experience shows cards like "Australia 200," "USA 500," "Big Tech," "Battery Tech," "Cyber Security," "Emerging Markets" — each with a one-line thesis. A twelve-year-old can hold "Big Tech" in their head. They can't hold "VOO." Every option was named and framed to be pedagogical without being condescending.
+
+  <Lead>A twelve-year-old can hold "Big Tech" in their head. They can't hold "VOO."</Lead>
+
+  <OptionsCarousel />
+</Section>
+
+<Section level={3} title="Each option teaches how to evaluate it">
+  Drilling into an option opens the same set of sections every time — About, Risk, Why drip it?, Holdings, Low management fees, To have in mind. The structure is the lesson. Every time the kid explores an option, they encounter the same evaluation framework, until it becomes how they think about any investment.
+
+  <Lead>A guardrail from the parent. A reason from the kid.</Lead>
+
+  <Shot src={optionDetail} alt="A hand holding a phone showing the Australia 200 option and its performance" />
+</Section>
+
+<Section level={3} title="Investing requires articulation">
+  Before the kid can invest, they fill in a short "Why Aussie?" note — explaining why they're making this choice. The parent-set Max Limit is visible above the amount, so the kid feels the guardrail without being blocked. The "Why" field forces the kid to think through their reasoning. The parent can read it later.
+
+  <Lead>The confirmation isn't a receipt. It's a small moment of pride.</Lead>
+
+  <Shot src={articulation} alt="A teen and his mother looking at the Drip app together at a cafe table" />
+</Section>
+
+<Section level={3} title="Celebration, not anxiety">
+  The post-trade screen says "What a Splash!" with a burst of bubbles. Investing is framed as a thing to feel good about, not nervous about. For a first-time investor at any age that affective framing matters — but for a twelve-year-old making their first trade, it matters more.
+
+  <Lead>The confirmation isn't a receipt. It's a small moment of pride.</Lead>
+
+  <Shot />
+</Section>
+
+<Section level={3} title="Home screen — empty state vs populated state side by side">
+  The visual language — the drop metaphor, the gradient illustrations, the "drip" verb — is doing identity work across all of this. It's playful enough to belong on a kid's phone and serious enough that it doesn't feel like a toy to a parent looking over their shoulder.
+
+  <Shot />
+</Section>
+
+<Divider />
+
+<Section title="Designing the guardian flow">
+  The guardian flow is long. Roughly 35 screens from "I am an adult" to "Welcome to drip." The length wasn't a design choice — it was the honest cost of opening a real investment account for a minor in Australia.
+</Section>
+
+<Section level={3} title="What the law required for onboarding">
+  **KYC identity verification** against the Australian Government Document Verification Service (DVS)
+
+  **AFSL compliance** Target Market Determination, Financial Services, Product Disclosure Statement
+
+  **Tax residency declarations** (Anti-Money Laundering and Counter-Terrorism Act 2006)
+
+  **Investor eligibility self-assessment (ASIC)**
+
+  **Guardian–minor relationship verification** (Medicare card or birth certificate) Funding account setup via Direct Debit Request
+
+  <Lead>None of these were negotiable. The design response wasn't to compress the flow it was to make a long compliance flow feel like a conversation.</Lead>
+
+  <Shot />
+</Section>
+
+<Section level={3} title="How we made it bearable">
+  **One question per screen.** Name, mobile, DOB, address, email — each isolated so the parent is answering a conversation, not filling a form.
+
+  **Named checkpoints with warmth.** "Almost there!", "You are ready to be an investor!", "Now, let's set Maria up!" — screens that do emotional work, telling the parent they're almost through.
+
+  **Progressive trust-building.** The regulatory documents appear after the parent has invested enough in the flow that reading them feels earned, not like a wall.
+
+  **Eligibility as self-reflection.** "Are you willing to risk capital loss?" is framed as judgment, not qualification. Answering No routes to a graceful off-ramp.
+
+  **"I'll do it later" as design, not failure.** Funding account setup and document uploads both have skip paths — the parent completes onboarding and finishes these from the right physical location.
+
+  <Lead>The flow can't be short. What it can be is warm, honest, and designed so a parent who makes it through feels respected.</Lead>
+
+  <Shot />
+</Section>
+
+<Divider />
+
+<Section title="Where the two flows meet">
+  The parent and the kid aren't using the app in parallel. They're using it in relationship. Every meaningful design moment in Drip lives at one of these handoff points.
+</Section>
+
+<Section level={3} title="The invite — either direction works, but the design respects the kid-initiated path">
+  The teen can download the app first and invite the parent, or the parent can start first and invite the teen. Both work. But the design deliberately allows the kid-to-parent path, because the kid is often the pull.
+
+  <Lead>The product respects where the interest comes from.</Lead>
+
+  <Shot />
+</Section>
+
+<Section level={3} title="Parental controls — the quiet heart of the product">
+  After KYC, during teen setup, the parent configures what investment options the kid can see. ASX200. S&P500. Big Tech. Emerging Markets. Ethical/ESG. Battery Tech. Commodity. The parent decides, with toggles, which categories appear in the kid's browse experience. The kid then explores and chooses within that bounded set.
+
+  <Lead>The parent shapes the possibility space. The kid plays inside it.</Lead>
+
+  <Shot />
+</Section>
+
+<Section level={3} title="The spend limit — a felt guardrail, not a blocked trade">
+  The parent sets a maximum per-trade amount. The kid sees it as "Max Limit" above the amount field on the investing screen. They feel the guardrail without being blocked by it.
+
+  <Lead>If the kid wants to invest more, that's a conversation to have at the dinner table — the product stays out of it.</Lead>
+
+  <Shot />
+</Section>
+
+<Section level={3} title={'The "Why" field — asynchronous accountability'}>
+  Before the kid confirms a trade, they write a short note explaining their choice. The parent reads it later. A lightweight accountability loop — pedagogical for the kid, reassuring for the parent.
+
+  <Lead>The kid articulates. The parent reviews. The interface stays out of the way</Lead>
+
+  <Shot />
+</Section>
+
+<Divider />
+
+<Section title="What shipped and what came next">
+  Drip launched in Australia in 2022 through BetterLabs, a Perth-based corporate venture fund. The product shipped end-to-end — guardian onboarding, kid onboarding, investment options, trading, settings, parental controls — as a complete, compliant, live investment platform for families.
+
+  <Shot />
+
+  In July 2025, Drip joined ASX-listed Raiz Invest (ASX: RZI) — Australia's largest micro-investing platform. Drip's users and audience were brought into Raiz's Kids offering. The product officially sunset on 11 August 2025.
+
+  <Lead>A mission scaling, not ending.</Lead>
+
+  <Shot />
+
+  <Statement>For a product designed as a mission to change how families talk about money, joining a larger, publicly listed platform with national reach was the mission scaling, not ending. The design work I did lives on in the audience that was handed over — thousands of Australian families who had their first conversation about investing through Drip's interface before being migrated to Raiz Kids.</Statement>
+</Section>

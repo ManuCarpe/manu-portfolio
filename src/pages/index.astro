@@ -1,0 +1,111 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import photo from '../assets/manu-hero.png';
+import { site } from '../data/site';
+---
+
+<Base>
+  <div class="home">
+    <Header />
+
+    <main class="hero">
+      <Image
+        class="photo"
+        src={photo}
+        alt="Portrait of Manu Mackal"
+        widths={[480, 720, 1024, 1536]}
+        sizes="58vh"
+        loading="eager"
+        fetchpriority="high"
+      />
+
+      <div class="bottom display">
+        <h1 class="role">{site.role}</h1>
+        <p class="name">{site.name}</p>
+        <p class="years">{site.experience}</p>
+      </div>
+    </main>
+  </div>
+</Base>
+
+<style>
+  /* One full-screen hero. Sizes follow the 3008px Figma frame via --u. */
+  .home {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100svh;
+    overflow: hidden;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 var(--pad-x);
+  }
+
+  /* Photo: centred, slightly taller than the screen so it runs behind the header (as in Figma) */
+  .photo {
+    position: absolute;
+    z-index: 0;
+    top: -4.15%;
+    left: 49.5%;
+    height: 103.5%;
+    width: auto;
+    max-width: none;
+    transform: translateX(-50%);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .bottom {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    color: var(--on-photo);
+    line-height: 1.3;
+  }
+
+  .role {
+    width: calc(1258 * var(--u));
+    font-size: calc(151.29 * var(--u));
+    line-height: 1.3;
+  }
+  .name,
+  .years {
+    font-size: calc(68.09 * var(--u));
+    white-space: nowrap;
+  }
+  .years {
+    width: calc(329 * var(--u));
+  }
+
+  /* ---------- Small screens ---------- */
+  @media (max-width: 767px) {
+    .bottom {
+      flex-wrap: wrap;
+      row-gap: 4px;
+      padding-bottom: 12px;
+    }
+    .role {
+      width: 100%;
+      font-size: clamp(36px, 11vw, 64px);
+      line-height: 1.15;
+    }
+    .name,
+    .years {
+      font-size: clamp(14px, 4.4vw, 24px);
+    }
+    .years {
+      width: auto;
+    }
+  }
+</style>

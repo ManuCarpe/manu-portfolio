@@ -1,0 +1,312 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import { site } from '../../data/site';
+import { slugify, sectionTitles } from '../../lib/slug';
+
+export async function getStaticPaths() {
+  const studies = (await getCollection('case-studies', ({ data }) => !data.draft)).sort(
+    (a, b) => a.data.order - b.data.order
+  );
+  return studies.map((study) => ({ params: { slug: study.id }, props: { study, studies } }));
+}
+
+const { study, studies } = Astro.props;
+const { title, summary, hero, heroAlt, client, year, tags, about } = study.data;
+const { Content } = await render(study);
+
+// Project switcher: this case study first, then the others
+const projects = [study, ...studies.filter((s) => s.id !== study.id)];
+const sections = sectionTitles(study.body).map((t) => ({ title: t, id: slugify(t) }));
+---
+
+<Base title={`${title} — ${site.name}`} description={summary}>
+  <Header active="case-study" solid />
+
+  <div class="study">
+    <!-- Side panel: sticks while the case study scrolls -->
+    <aside class="side">
+      <nav class="projects" aria-label="Case studies">
+        {projects.map((p) => (
+          <a
+            href={`/case-study/${p.id}/`}
+            class:list={['thumb', { current: p.id === study.id }]}
+            aria-current={p.id === study.id ? 'page' : undefined}
+            title={p.data.title}
+          >
+            <Image src={p.data.cover} alt={p.data.title} widths={[70, 140]} sizes="70px" />
+          </a>
+        ))}
+      </nav>
+
+      <dl class="details">
+        {client && (
+          <div class="row">
+            <dt>Client</dt>
+            <dd>{client}</dd>
+          </div>
+        )}
+        {year && (
+          <div class="row">
+            <dt>Year</dt>
+            <dd>{year}</dd>
+          </div>
+        )}
+        {tags.length > 0 && (
+          <div class="row">
+            <dt>Tags</dt>
+            <dd class="tags">
+              {tags.map((tag) => <span class="tag">{tag}</span>)}
+            </dd>
+          </div>
+        )}
+        {about.length > 0 && (
+          <div class="row">
+            <dt>About</dt>
+            <dd class="about">{about.map((p) => <p>{p}</p>)}</dd>
+          </div>
+        )}
+      </dl>
+
+      {sections.length > 1 && (
+        <nav class="toc" aria-label="On this page">
+          <p class="toc__label">Contents</p>
+          <ol class="toc__list display">
+            {sections.map((s, i) => (
+              <li>
+                <a href={`#${s.id}`} class:list={{ active: i === 0 }} data-toc={s.id}>{s.title}</a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+    </aside>
+
+    <main class="main">
+      <header class="intro">
+        <h1 class="title display">{title}</h1>
+        {hero && (
+          <Image
+            class="hero"
+            src={hero}
+            alt={heroAlt}
+            widths={[720, 1100, 1670, 2400].filter((w) => w <= hero.width * 2)}
+            sizes="(max-width: 1023px) calc(100vw - 32px), 56vw"
+            loading="eager"
+            fetchpriority="high"
+          />
+        )}
+      </header>
+
+      <Content />
+    </main>
+  </div>
+</Base>
+
+<script>
+  // Highlight the section you're reading in the side menu
+  const links = new Map<string, HTMLAnchorElement>();
+  document.querySelectorAll<HTMLAnchorElement>('[data-toc]').forEach((a) => links.set(a.dataset.toc!, a));
+  const sections = [...document.querySelectorAll<HTMLElement>('[data-nav]')];
+  if (links.size && sections.length) {
+    const setActive = () => {
+      const line = window.innerHeight * 0.35;
+      let current = sections[0];
+      for (const s of sections) if (s.getBoundingClientRect().top <= line) current = s;
+      links.forEach((a, id) => a.classList.toggle('active', id === current.dataset.nav));
+    };
+    setActive();
+    window.addEventListener('scroll', setActive, { passive: true });
+    window.addEventListener('resize', setActive);
+  }
+</script>
+
+<style>
+  .study {
+    --side-top: calc(max(22px, 63 * var(--u)) * 2.4 + var(--pad-y) * 2);
+    --pt: clamp(32px, calc(100 * var(--u)), 100px);
+    display: flex;
+    gap: 42px;
+    padding: 0 var(--pad-x) 120px;
+  }
+
+  /* ---------- Side panel ---------- */
+  .side {
+    position: sticky;
+    top: var(--side-top);
+    flex: 0 0 auto;
+    width: clamp(300px, 22vw, 617px);
+    height: calc(100vh - var(--side-top));
+    height: calc(100svh - var(--side-top));
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: var(--pt) 0 24px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    font-family: var(--sans);
+    letter-spacing: -0.01em;
+  }
+  .side::-webkit-scrollbar {
+    display: none;
+  }
+
+  .projects {
+    display: flex;
+    gap: 8.94px;
+  }
+  .thumb {
+    display: block;
+    width: 69.3px;
+    height: 79px;
+    opacity: 0.2;
+    transition: opacity 0.25s ease;
+  }
+  .thumb:hover,
+  .thumb.current {
+    opacity: 1;
+  }
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .details,
+  .toc {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .details {
+    gap: 24px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.25fr) minmax(0, 1fr);
+    gap: 16px;
+    line-height: 1.36;
+  }
+  dt,
+  .toc__label {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  dd {
+    font-size: 16px;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    letter-spacing: -0.03em;
+  }
+  /* "Tag |" — the divider sits after each tag so a wrapped line never starts with one */
+  .tag:not(:last-child)::after {
+    content: '|';
+    margin-left: 12px;
+    color: var(--separator);
+  }
+  .about {
+    display: flex;
+    flex-direction: column;
+    gap: 1.36em;
+    letter-spacing: -0.03em;
+  }
+
+  .toc {
+    display: grid;
+    grid-template-columns: minmax(0, 0.25fr) minmax(0, 1fr);
+    align-content: center;
+    gap: 16px;
+    line-height: 1.36;
+  }
+  .toc__list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-size: 16px;
+    line-height: 1.44;
+    letter-spacing: -0.03em;
+  }
+  .toc__list a {
+    color: var(--faint);
+    transition: color 0.2s ease;
+  }
+  .toc__list a:hover,
+  .toc__list a.active {
+    color: var(--text);
+  }
+
+  /* Shorter windows: tighten the side panel so everything fits */
+  @media (min-width: 1024px) and (max-height: 1080px) {
+    .details {
+      gap: 14px;
+    }
+    .side {
+      gap: 20px;
+    }
+    dd,
+    .about {
+      font-size: 14px;
+    }
+    .toc__list {
+      gap: 8px;
+      font-size: 13px;
+    }
+  }
+
+  /* ---------- Main column ---------- */
+  .main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    padding: var(--pt) max(0px, calc((100vw - 1440px) * 0.207)) 0;
+  }
+  .intro {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .title {
+    font-size: clamp(30px, 3.4vw, 68px);
+    line-height: 1.44;
+  }
+  .hero {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1670 / 884;
+    object-fit: cover;
+  }
+
+  /* ---------- Smaller screens: panel on top, no section menu ---------- */
+  @media (max-width: 1023px) {
+    .study {
+      flex-direction: column;
+      gap: 32px;
+      padding-bottom: 80px;
+    }
+    .side {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      padding-bottom: 0;
+    }
+    .details {
+      flex: none;
+    }
+    .toc {
+      display: none;
+    }
+    .main {
+      padding-top: 0;
+      gap: 48px;
+    }
+  }
+</style>

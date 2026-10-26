@@ -1,0 +1,159 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import { site } from '../../data/site';
+
+const studies = (await getCollection('case-studies', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+---
+
+<Base title={`Case studies — ${site.name}`}>
+  <div class="page">
+    <Header active="case-study" />
+
+    <main class="listing">
+      <h1 class="sr-only">Case studies</h1>
+      <ul class="strip" data-strip>
+        {studies.map((study, i) => (
+          <li class="card">
+            <a href={`/case-study/${study.id}/`} class="card__link">
+              <Image
+                class="card__img"
+                src={study.data.cover}
+                alt={study.data.coverAlt}
+                widths={[480, 720, 1100, 1600]}
+                sizes="(max-width: 767px) 82vw, 37vw"
+                loading={i < 3 ? 'eager' : 'lazy'}
+              />
+              <h2 class="card__title display">{study.data.title}</h2>
+              <p class="card__summary">{study.data.summary}</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </main>
+  </div>
+</Base>
+
+<script>
+  // Scroll the card strip sideways with a normal mouse wheel too
+  const strip = document.querySelector<HTMLElement>('[data-strip]');
+  strip?.addEventListener(
+    'wheel',
+    (e) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      const max = strip.scrollWidth - strip.clientWidth;
+      if (max <= 0) return;
+      const atStart = strip.scrollLeft <= 0 && e.deltaY < 0;
+      const atEnd = strip.scrollLeft >= max - 1 && e.deltaY > 0;
+      if (atStart || atEnd) return;
+      e.preventDefault();
+      strip.scrollLeft += e.deltaY;
+    },
+    { passive: false }
+  );
+</script>
+
+<style>
+  .page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+
+  .listing {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: calc(44 * var(--u));
+  }
+
+  /* Three tall cards side by side; the row is wider than the screen and scrolls sideways */
+  .strip {
+    display: flex;
+    gap: calc(24 * var(--u));
+    width: 100%;
+    padding: 0 var(--pad-x);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 var(--pad-x);
+    scrollbar-width: none;
+  }
+  .strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    flex: 0 0 auto;
+    width: calc(1044 * var(--u));
+    height: min(calc(1262 * var(--u)), calc(100svh - 160px));
+    scroll-snap-align: start;
+  }
+  .card__link {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding: calc(27 * var(--u));
+    overflow: hidden;
+    color: var(--on-photo);
+  }
+  .card__img {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: scale 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .card__link:hover .card__img {
+    scale: 1.04;
+  }
+  .card__title,
+  .card__summary {
+    position: relative;
+    z-index: 1;
+  }
+  .card__title {
+    max-width: calc(681 * var(--u));
+    font-size: max(18px, calc(46 * var(--u)));
+    line-height: 1.44;
+  }
+  .card__summary {
+    max-width: calc(710 * var(--u));
+    font-family: var(--sans);
+    font-size: max(13px, calc(31 * var(--u)));
+    line-height: 1.48;
+    color: rgba(255, 255, 255, 0.79);
+  }
+
+  @media (max-width: 767px) {
+    .listing {
+      padding-bottom: 16px;
+    }
+    .strip {
+      gap: 10px;
+    }
+    .card {
+      width: 82vw;
+      height: min(108vw, calc(100svh - 140px));
+    }
+    .card__link {
+      padding: 14px;
+    }
+    .card__title {
+      max-width: none;
+      font-size: 18px;
+    }
+    .card__summary {
+      max-width: none;
+      font-size: 13px;
+    }
+  }
+</style>

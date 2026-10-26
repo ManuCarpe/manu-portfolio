@@ -1,0 +1,162 @@
+---
+import { Image } from 'astro:assets';
+import stage from '../../assets/case-studies/drip/anim/options-stage.png';
+import usa500 from '../../assets/case-studies/drip/anim/card-usa-500.png';
+import asia200 from '../../assets/case-studies/drip/anim/card-asia-200.png';
+import emerging from '../../assets/case-studies/drip/anim/card-emerging-markets.png';
+import battery from '../../assets/case-studies/drip/anim/card-battery-tech.png';
+import cyber from '../../assets/case-studies/drip/anim/card-cyber-security.png';
+import crypto from '../../assets/case-studies/drip/anim/card-crypto.png';
+import commodities from '../../assets/case-studies/drip/anim/card-commodities.png';
+
+// "Investment options" frame from Figma, rebuilt live: the phone sits on the purple
+// DRIP INVEST background and the theme cards shuffle one step to the right every few
+// seconds — the card that lands in the middle grows (Battery Tech → Emerging Markets → …).
+// Coordinates are Figma pixels inside the 822 × 410 frame.
+const cards = [
+  { src: usa500, label: 'USA 500' },
+  { src: asia200, label: 'Asia 200' },
+  { src: emerging, label: 'Emerging Markets' },
+  { src: battery, label: 'Battery Tech' },
+  { src: cyber, label: 'Cyber Security' },
+  { src: crypto, label: 'Crypto' },
+  { src: commodities, label: 'Commodities' },
+];
+const START = 3; // Battery Tech in the middle, as in the design
+
+// Card offset from the middle → centre x in Figma px (neighbours of the big middle card
+// sit 165.6px away, the rest 150.4px apart). Mirrored in the script below.
+const centreX = (o: number) => {
+  const a = Math.abs(o);
+  return 410.85 + Math.sign(o) * (a === 0 ? 0 : 165.6 + (a - 1) * 150.385);
+};
+
+interface Props {
+  /** Seconds each card stays in the middle */
+  interval?: number;
+}
+const { interval = 2.6 } = Astro.props;
+---
+
+<figure
+  class="options"
+  data-options
+  data-interval={interval}
+  aria-label="Drip investment options screen with theme cards (USA 500, Asia 200, Emerging Markets, Battery Tech, Cyber Security, Crypto, Commodities) shuffling across the phone"
+>
+  <Image class="stage" src={stage} alt="" widths={[822, 1643]} sizes="(max-width: 1023px) calc(100vw - 32px), 40vw" />
+  {cards.map((c, i) => (
+    <div
+      class="card"
+      data-card
+      style={`--o:${i - START};--x:${centreX(i - START)};--s:${i === START ? 1.19 : 1};z-index:${10 - Math.abs(i - START)}`}
+    >
+      <Image src={c.src} alt="" widths={[200, 336]} sizes="20vw" />
+      <span class="sr-only">{c.label}</span>
+    </div>
+  ))}
+</figure>
+
+<script>
+  // Card offset from the middle → centre x in Figma px (frame is 822 wide).
+  // Neighbours of the big middle card sit 165.6px away, the rest 150.4px apart.
+  const centreX = (o: number) => {
+    const a = Math.abs(o);
+    const d = a === 0 ? 0 : 165.6 + (a - 1) * 150.385;
+    return 410.85 + Math.sign(o) * d;
+  };
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  document.querySelectorAll<HTMLElement>('[data-options]').forEach((root) => {
+    const cards = [...root.querySelectorAll<HTMLElement>('[data-card]')];
+    const n = cards.length;
+    const half = Math.floor(n / 2);
+    let offsets = cards.map((c) => parseInt(c.style.getPropertyValue('--o'), 10));
+
+    const place = (card: HTMLElement, o: number) => {
+      card.style.setProperty('--x', String(centreX(o)));
+      card.style.setProperty('--s', o === 0 ? '1.19' : '1');
+      card.style.zIndex = String(10 - Math.abs(o));
+    };
+    cards.forEach((c, i) => place(c, offsets[i]));
+
+    const step = () => {
+      // The card on the far right jumps (unseen, behind the edge fade) to just off the left edge…
+      cards.forEach((c, i) => {
+        if (offsets[i] === half) {
+          c.classList.add('jump');
+          offsets[i] = -half - 1;
+          place(c, offsets[i]);
+          void c.offsetWidth; // apply the jump before re-enabling the transition
+          c.classList.remove('jump');
+        }
+      });
+      // …then everything slides one place to the right; the new middle card grows.
+      offsets = offsets.map((o) => o + 1);
+      cards.forEach((c, i) => place(c, offsets[i]));
+    };
+
+    let timer: number | undefined;
+    const ms = parseFloat(root.dataset.interval || '2.6') * 1000;
+    const start = () => {
+      if (timer || reduce.matches) return;
+      timer = window.setInterval(step, ms);
+    };
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = undefined;
+    };
+
+    // Only run while the frame is on screen and the tab is visible
+    let visible = false;
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      visible && !document.hidden ? start() : stop();
+    }).observe(root);
+    document.addEventListener('visibilitychange', () => (visible && !document.hidden ? start() : stop()));
+  });
+</script>
+
+<style>
+  .options {
+    position: relative;
+    margin: 0;
+    width: 100%;
+    aspect-ratio: 822 / 410;
+    overflow: hidden;
+    container-type: inline-size;
+    background: #600fa7;
+    /* Soft edges so cards entering/leaving at the sides never pop */
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+  }
+  .stage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .card {
+    --k: calc(100cqw / 822); /* 1 Figma px */
+    --x: 0;
+    --s: 1;
+    position: absolute;
+    left: 0;
+    top: calc(154 * var(--k));
+    width: calc(141.385 * var(--k));
+    height: calc(150 * var(--k));
+    transform: translateX(calc((var(--x) - 70.69) * var(--k))) scale(var(--s));
+    transition: transform 0.9s cubic-bezier(0.65, 0, 0.25, 1);
+    will-change: transform;
+  }
+  .card.jump {
+    transition: none;
+  }
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>

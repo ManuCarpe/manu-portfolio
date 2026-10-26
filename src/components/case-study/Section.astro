@@ -1,0 +1,81 @@
+---
+// A case study section: heading on the left, content on the right (desktop).
+//   <Section title="What Drip is">            big Boldonse heading (appears in the side menu)
+//   <Section level={3} title="The kid">       smaller sub-heading (not in the side menu)
+import { slugify } from '../../lib/slug';
+
+interface Props {
+  title: string;
+  level?: 2 | 3;
+}
+const { title, level = 2 } = Astro.props;
+const Heading = level === 3 ? 'h3' : 'h2';
+const id = slugify(title);
+---
+
+<section class:list={['section', `section--${level}`]} id={level === 2 ? id : undefined} data-nav={level === 2 ? id : undefined}>
+  <Heading class="heading display">{title}</Heading>
+  <div class="body">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 25px;
+    row-gap: 25px;
+    align-items: start;
+    scroll-margin-top: 140px;
+  }
+
+  .heading {
+    line-height: 1.44;
+    letter-spacing: -0.03em;
+  }
+  .section--2 .heading {
+    font-size: 28px;
+  }
+  .section--3 .heading {
+    font-size: 20px;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+    color: var(--muted);
+  }
+  .body :global(strong) {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .body :global(a) {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  @media (max-width: 1023px) {
+    .section {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 20px;
+    }
+    .section--2 .heading {
+      font-size: 22px;
+    }
+    .section--3 .heading {
+      font-size: 17px;
+    }
+    .body {
+      font-size: 16px;
+      gap: 20px;
+    }
+  }
+</style>

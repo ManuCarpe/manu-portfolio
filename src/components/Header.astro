@@ -1,0 +1,136 @@
+---
+// Site header: "Manu. Design" logo + stacked menu with the letter-roll hover.
+// `active` dims the other menu items (20%) like the Figma inner pages.
+// `solid` adds a progressive blur behind the header: content scrolling underneath gets
+// more blurred (and more tinted with the page colour) the closer it gets to the top edge.
+import { site, type NavKey } from '../data/site';
+
+interface Props {
+  active?: NavKey;
+  solid?: boolean;
+}
+
+const { active, solid = false } = Astro.props;
+---
+
+<header class:list={['header', 'display', { solid }]}>
+  {solid && (
+    <div class="pblur" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+  )}
+  <a href="/" class="logo" aria-label="Manu Design, home">Manu.<br />Design</a>
+  <nav class="nav" aria-label="Primary">
+    {site.nav.map((item) => (
+      <a
+        class:list={['roll', { dim: active && active !== item.key }]}
+        href={item.href}
+        aria-label={item.label}
+        aria-current={active === item.key ? 'page' : undefined}
+      >
+        {[...item.label].map((ch, i) => (
+          <span class="char" aria-hidden="true" style={`--i:${i}`}>{ch === ' ' ? ' ' : ch}</span>
+        ))}
+      </a>
+    ))}
+  </nav>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: var(--pad-y) var(--pad-x);
+  }
+  /* ---------- Progressive blur ----------
+     Stacked layers, each blurring a bit more than the last and masked to a shorter
+     band at the top, so the blur ramps smoothly from strong (top) to none (bottom). */
+  .pblur {
+    position: absolute;
+    inset: 0 0 auto;
+    height: calc(100% + 28px);
+    z-index: -1;
+    pointer-events: none;
+    /* Page-colour tint that fades out too, so text stays readable over busy images */
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--bg) 82%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 55%, transparent) 55%,
+      transparent 100%
+    );
+  }
+  .pblur i {
+    position: absolute;
+    inset: 0;
+    -webkit-backdrop-filter: blur(var(--b));
+    backdrop-filter: blur(var(--b));
+    -webkit-mask-image: linear-gradient(to bottom, #000 var(--from), transparent var(--to));
+    mask-image: linear-gradient(to bottom, #000 var(--from), transparent var(--to));
+  }
+  .pblur i:nth-child(1) { --b: 0.5px; --from: 55%; --to: 100%; }
+  .pblur i:nth-child(2) { --b: 1px;   --from: 45%; --to: 88%; }
+  .pblur i:nth-child(3) { --b: 2px;   --from: 35%; --to: 76%; }
+  .pblur i:nth-child(4) { --b: 4px;   --from: 25%; --to: 64%; }
+  .pblur i:nth-child(5) { --b: 8px;   --from: 12%; --to: 52%; }
+  .pblur i:nth-child(6) { --b: 16px;  --from: 0%;  --to: 40%; }
+
+  .logo {
+    font-size: max(22px, calc(63 * var(--u)));
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: calc(7 * var(--u));
+    font-size: max(11px, calc(33 * var(--u)));
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .dim {
+    opacity: 0.2;
+    transition: opacity 0.25s ease;
+  }
+  .dim:hover,
+  .dim:focus-visible {
+    opacity: 1;
+  }
+
+  /* Letter-by-letter roll: each letter slides up and an identical copy
+     (drawn with text-shadow 1.6em below, out of view) rolls in, one letter after another */
+  .roll {
+    display: inline-flex;
+    overflow: hidden;
+    line-height: 1.2;
+  }
+  .char {
+    display: inline-block;
+    text-shadow: 0 1.6em currentColor;
+    transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+    transition-delay: calc(var(--i) * 25ms);
+  }
+  .roll:hover .char,
+  .roll:focus-visible .char {
+    transform: translateY(-1.6em);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .char {
+      transition: none;
+    }
+    .roll:hover .char,
+    .roll:focus-visible .char {
+      transform: none;
+    }
+    .roll:hover {
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
+  }
+</style>
