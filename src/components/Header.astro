@@ -5,15 +5,17 @@
 // more blurred (and more tinted with the page colour) the closer it gets to the top edge.
 import { site, type NavKey } from '../data/site';
 
+// `condensed` sets the logo and menu in Tanker, as on the case study pages.
 interface Props {
   active?: NavKey;
   solid?: boolean;
+  condensed?: boolean;
 }
 
-const { active, solid = false } = Astro.props;
+const { active, solid = false, condensed = false } = Astro.props;
 ---
 
-<header class:list={['header', 'display', { solid }]}>
+<header class:list={['header', 'display', { solid, condensed }]}>
   {solid && (
     <div class="pblur" aria-hidden="true">
       <i></i><i></i><i></i><i></i><i></i><i></i>
@@ -92,6 +94,30 @@ const { active, solid = false } = Astro.props;
     font-size: max(11px, calc(33 * var(--u)));
     line-height: 1.2;
     white-space: nowrap;
+  }
+
+  /* Tanker version (case study pages): taller, tighter type */
+  .condensed {
+    font-family: var(--condensed);
+  }
+  .condensed .logo {
+    font-size: max(28px, calc(79 * var(--u)));
+    line-height: 0.78;
+    letter-spacing: -0.03em;
+  }
+  .condensed .nav {
+    gap: calc(7 * var(--u));
+    font-size: max(15px, calc(44 * var(--u)));
+    letter-spacing: -0.01em;
+  }
+  .condensed .roll,
+  .condensed .nav {
+    line-height: 0.8;
+  }
+  /* Room for the glyphs inside the clipped roll box (Tanker caps sit tall in a 0.8 line) */
+  .condensed .roll {
+    padding-top: 0.12em;
+    margin-top: -0.12em;
   }
 
   .dim {

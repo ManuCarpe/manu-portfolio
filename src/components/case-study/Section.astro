@@ -1,6 +1,6 @@
 ---
 // A case study section: heading on the left, content on the right (desktop).
-//   <Section title="What Drip is">            big Boldonse heading (appears in the side menu)
+//   <Section title="What Drip is">            big Tanker heading (appears in the side menu)
 //   <Section level={3} title="The kid">       smaller sub-heading (not in the side menu)
 import { slugify } from '../../lib/slug';
 
@@ -14,7 +14,7 @@ const id = slugify(title);
 ---
 
 <section class:list={['section', `section--${level}`]} id={level === 2 ? id : undefined} data-nav={level === 2 ? id : undefined}>
-  <Heading class="heading display">{title}</Heading>
+  <Heading class:list={['heading', level === 3 ? 'display' : 'condensed']}>{title}</Heading>
   <div class="body">
     <slot />
   </div>
@@ -34,8 +34,11 @@ const id = slugify(title);
     line-height: 1.44;
     letter-spacing: -0.03em;
   }
+  /* Chapter headings: Tanker 50 */
   .section--2 .heading {
-    font-size: 28px;
+    font-size: 50px;
+    line-height: 0.9;
+    letter-spacing: 0;
   }
   .section--3 .heading {
     font-size: 20px;
@@ -68,7 +71,7 @@ const id = slugify(title);
       row-gap: 20px;
     }
     .section--2 .heading {
-      font-size: 22px;
+      font-size: 36px;
     }
     .section--3 .heading {
       font-size: 17px;
