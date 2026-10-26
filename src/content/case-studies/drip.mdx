@@ -4,8 +4,6 @@ title: When your users are a kid and their guardian, in the same app
 summary: Designed Drip, an Australian micro-investing app where kids learn to invest and parents stay in control.
 cover: ../../assets/case-studies/cover-family.png
 coverAlt: A teenager laughing with her parents, all holding phones
-hero: ../../assets/case-studies/drip/hero.png
-heroAlt: A teenager laughing with her parents, all holding phones
 client: Drip Invest
 year: "2023"
 tags:
@@ -28,7 +26,8 @@ import Gallery from '../../components/case-study/Gallery.astro';
 import OptionsCarousel from '../../components/case-study/OptionsCarousel.astro';
 import InviteToast from '../../components/case-study/InviteToast.astro';
 
-import brandHero from '../../assets/case-studies/drip/brand-hero.png';
+import brandKid from '../../assets/case-studies/drip/brand-kid.png';
+import brandFamily from '../../assets/case-studies/drip/brand-family.png';
 import brandPoster from '../../assets/case-studies/drip/brand-poster.png';
 import brandGuidelines from '../../assets/case-studies/drip/brand-guidelines.png';
 import brandPosters from '../../assets/case-studies/drip/brand-posters.png';
@@ -37,16 +36,35 @@ import optionDetail from '../../assets/case-studies/drip/option-detail.png';
 import articulation from '../../assets/case-studies/drip/articulation.png';
 
 {/*
-  How to write a case study (the title and hero image come from the frontmatter above):
+  How to write a case study (the title comes from the frontmatter above):
   - Section with a title             big heading on the left, content on the right — also listed in the side menu
   - Section with level={3}           smaller sub-heading
   - <Shot src={image} />             an image;  <Shot />  a grey placeholder until the screen is ready
   - <Lead>                           the black takeaway line
   - <Gallery rows={[[a], [b, c]]} /> full-width image rows (images in a row share one height)
+  - <Gallery hero … />               the same, sitting tight under the title as the opening images
   - <Statement>                      a large closing statement
   - <Divider />                      a thin line between chapters
   - Plain text, **bold**, and blank lines between paragraphs work as normal.
 */}
+
+<Gallery
+  hero
+  rows={[
+    [
+      { src: brandPoster, alt: 'Drip poster: Drip into your future' },
+      { src: brandGuidelines, alt: 'Drip brand guidelines cover, 2023' },
+    ],
+    [
+      { src: brandKid, alt: 'A girl holding out a phone showing the Drip welcome screen, with DRIP INVEST lettering behind her' },
+      { src: brandFamily, alt: 'A teenager laughing with her parents, all holding phones' },
+    ],
+    [
+      { src: brandPosters, alt: 'Three Drip social posters' },
+      { src: brandIcons, alt: 'Drip 3D icons: key, drop, chart and bell' },
+    ],
+  ]}
+/>
 
 <Section title="What Drip is">
   Drip is an Australian micro-investing app for kids under 17, supervised by a parent or guardian. Kids learn to invest with small amounts of real money. Parents stay in control — approving the account, setting limits, and overseeing what their kid does inside the app.
@@ -55,20 +73,6 @@ import articulation from '../../assets/case-studies/drip/articulation.png';
 
   <Lead>The product exists to grow financial literacy in the next generation. The hypothesis: if you teach someone to invest when they're twelve, they're a different kind of adult investor at thirty.</Lead>
 </Section>
-
-<Gallery
-  rows={[
-    [{ src: brandHero, alt: 'A girl holding out a phone showing the Drip welcome screen, with DRIP INVEST lettering behind her' }],
-    [
-      { src: brandPoster, alt: 'Drip poster: Drip into your future' },
-      { src: brandGuidelines, alt: 'Drip brand guidelines cover, 2023' },
-    ],
-    [
-      { src: brandPosters, alt: 'Three Drip social posters' },
-      { src: brandIcons, alt: 'Drip 3D icons: key, drop, chart and bell' },
-    ],
-  ]}
-/>
 
 <Section title="The design problem - two users, one app">
   Drip wasn't built to be another investment app. It was built as a mission: increase financial literacy in the next generation of Australians. If the mission worked, the business worked.
@@ -87,9 +91,7 @@ import articulation from '../../assets/case-studies/drip/articulation.png';
 <Divider />
 
 <Section title="Who I talked to">
-  Before design started, I ran user interview sessions with Australian parents. The group wasn't homogeneous.
-
-  Some had investment backgrounds and wanted their kids introduced to the space early — guided, with guardrails. Others saw their kids drawn to technology and wanted to channel that interest into something with long-term value.
+  Before design started, I ran user interview sessions with Australian parents. The group wasn't homogeneous. Some had investment backgrounds and wanted their kids introduced to the space early — guided, with guardrails. Others saw their kids drawn to technology and wanted to channel that interest into something with long-term value.
 
   <Lead>Different starting points. Same instinct — a safe way to let their kid participate in something they considered important.</Lead>
 </Section>

@@ -5,14 +5,16 @@ import type { ImageMetadata } from 'astro';
 // Full-width rows of images. Images in the same row share one height
 // (each takes width in proportion to its shape), 16px apart — as in the Figma brand gallery.
 //   <Gallery rows={[[wide], [left, right]]} />
+//   <Gallery hero rows={…} />  opening gallery: sits 24px under the title, loads first
 interface Props {
   rows: { src: ImageMetadata; alt?: string }[][];
+  hero?: boolean;
 }
-const { rows } = Astro.props;
+const { rows, hero = false } = Astro.props;
 ---
 
-<div class="gallery">
-  {rows.map((row) => (
+<div class:list={['gallery', { hero }]}>
+  {rows.map((row, r) => (
     <div class="row">
       {row.map(({ src, alt = '' }) => (
         <div class="cell" style={`flex:${src.width / src.height}`}>
@@ -21,6 +23,7 @@ const { rows } = Astro.props;
             alt={alt}
             widths={[480, 820, 1200, 1667].filter((w) => w <= src.width)}
             sizes={`(max-width: 1023px) calc(100vw - 32px), ${Math.round(56 / row.length)}vw`}
+            loading={hero && r < 2 ? 'eager' : 'lazy'}
           />
         </div>
       ))}
@@ -33,6 +36,10 @@ const { rows } = Astro.props;
     display: flex;
     flex-direction: column;
     gap: 16px;
+  }
+  /* Opening gallery: pull it up to 24px under the title (the page puts --flow-gap between blocks) */
+  .hero {
+    margin-top: calc(24px - var(--flow-gap, 80px));
   }
   .row {
     display: flex;

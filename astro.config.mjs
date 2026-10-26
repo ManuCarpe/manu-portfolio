@@ -2,10 +2,10 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 
-// TODO: set `site` to your domain (e.g. 'https://manumackal.com').
+// Live at the custom domain (public/CNAME).
 // Because the site uses a custom domain, no `base` path is needed.
 export default defineConfig({
-  site: 'https://example.com',
+  site: 'https://manum.design',
   trailingSlash: 'ignore',
   integrations: [mdx()],
 });
