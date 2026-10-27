@@ -1,0 +1,44 @@
+---
+// Kid-flow banner art for "Investment options as themes, not SKUs." (Figma 217:2817):
+// Drip purple with big DRIP INVEST lettering, and the live shuffling theme cards on the right.
+import OptionsCarousel from './OptionsCarousel.astro';
+---
+
+<div class="ob" aria-hidden="false">
+  <p class="ob__word brand" aria-hidden="true">Dripinvest</p>
+  <div class="ob__phone">
+    <OptionsCarousel fill />
+  </div>
+</div>
+
+<style>
+  .ob {
+    position: absolute;
+    inset: 0;
+    background: #600fa7;
+    overflow: hidden;
+  }
+  .ob__word {
+    position: absolute;
+    left: calc(-181 / 1541 * 100%);
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: calc(366.5 / 1541 * 100cqw);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.2);
+  }
+  .ob__phone {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(822 / 1541 * 100%);
+  }
+  @media (max-width: 1023px) {
+    .ob__phone {
+      left: auto;
+      right: -12%;
+    }
+  }
+</style>

@@ -1,31 +1,21 @@
 ---
-// The black takeaway line inside a section (24px medium in Figma).
-interface Props {
-  size?: 'normal' | 'large';
-}
-const { size = 'normal' } = Astro.props;
+// The black takeaway line in a section (Barlow SemiBold 26).
 ---
 
-<p class:list={['lead', { large: size === 'large' }]}><slot /></p>
+<p class="lead"><slot /></p>
 
 <style>
   .lead {
     color: var(--text);
     font-family: var(--sans);
-    font-size: 24px;
-    font-weight: 500;
+    font-size: 26px;
+    font-weight: 600;
     line-height: 1.2;
     letter-spacing: -0.01em;
   }
-  .large {
-    font-size: 32px;
-  }
   @media (max-width: 1023px) {
     .lead {
-      font-size: 19px;
-    }
-    .large {
-      font-size: 22px;
+      font-size: 20px;
     }
   }
 </style>

@@ -1,59 +1,106 @@
 ---
-// A case study section: heading on the left, content on the right (desktop).
-//   <Section title="What Drip is">            big Tanker heading (appears in the side menu)
-//   <Section level={3} title="The kid">       smaller sub-heading (not in the side menu)
+// Case study blocks, in the white column (Figma "case study content" 217:2672).
+//
+//   <Section title="What Drip is">                  Chapter: big heading on the left, text on the
+//     <Lead>…</Lead> text…                          right. Listed in the side menu (Index).
+//   </Section>
+//
+//   <Section level={3} title="The kid can start…"   Sub-section: a wide banner with the title on it,
+//            banner={image}>                        then its text on the right. Instead of an image,
+//     text… <Lead>…</Lead>                          the banner can hold live art:
+//     <InviteBanner slot="art" />                   <InviteBanner slot="art" />, <OptionsBanner slot="art" />
+//   </Section>                                      With neither, the banner is a grey placeholder.
+//
+// Blocks sit edge to edge, so a chapter and its sub-sections read as one white card.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import { slugify } from '../../lib/slug';
 
 interface Props {
   title: string;
   level?: 2 | 3;
+  /** Sub-sections: banner photo behind the title */
+  banner?: ImageMetadata;
+  bannerAlt?: string;
 }
-const { title, level = 2 } = Astro.props;
-const Heading = level === 3 ? 'h3' : 'h2';
+const { title, level = 2, banner, bannerAlt = '' } = Astro.props;
 const id = slugify(title);
+const hasArt = Astro.slots.has('art');
 ---
 
-<section class:list={['section', `section--${level}`]} id={level === 2 ? id : undefined} data-nav={level === 2 ? id : undefined}>
-  <Heading class:list={['heading', level === 3 ? 'display' : 'condensed']}>{title}</Heading>
-  <div class="body">
-    <slot />
-  </div>
-</section>
+{
+  level === 2 ? (
+    <section class="block chapter" id={id} data-nav={id}>
+      <h2 class="chapter__title display">{title}</h2>
+      <div class="body">
+        <slot />
+      </div>
+    </section>
+  ) : (
+    <section class="block sub">
+      <div class:list={['banner', { 'banner--empty': !banner && !hasArt }]}>
+        {banner && (
+          <Image
+            class="banner__img"
+            src={banner}
+            alt={bannerAlt}
+            widths={[800, 1541, 2312].filter((w) => w <= banner.width)}
+            sizes="(max-width: 1023px) 100vw, 56vw"
+          />
+        )}
+        {hasArt && <slot name="art" />}
+        <span class="banner__shade" aria-hidden="true" />
+        <h3 class="banner__title brand">{title}</h3>
+      </div>
+      <div class="sub__row">
+        <div class="body">
+          <slot />
+        </div>
+      </div>
+    </section>
+  )
+}
 
 <style>
-  .section {
+  .block {
+    background: #fff;
+    padding: 0 max(16px, calc(63 * var(--cu)));
+  }
+
+  /* ---------- Chapter ---------- */
+  .chapter {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 25px;
-    row-gap: 25px;
+    row-gap: 24px;
     align-items: start;
+    padding-top: max(32px, calc(73 * var(--cu)));
+    padding-bottom: max(32px, calc(73 * var(--cu)));
+    border-top: 1px solid var(--bg);
     scroll-margin-top: 140px;
   }
-
-  .heading {
-    line-height: 1.44;
-    letter-spacing: -0.03em;
+  /* A chapter followed by its sub-sections: no gap below, the banner continues the card */
+  .chapter:has(+ .sub) {
+    padding-bottom: 40px;
   }
-  /* Chapter headings: Tanker 50 */
-  .section--2 .heading {
-    font-size: 50px;
-    line-height: 0.9;
-    letter-spacing: 0;
-  }
-  .section--3 .heading {
-    font-size: 20px;
+  .chapter__title {
+    font-size: clamp(34px, calc(62 * var(--cu)), 62px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
   }
 
+  /* ---------- Body text (right column) ---------- */
   .body {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 32px;
     min-width: 0;
     font-family: var(--sans);
-    font-size: 18px;
+    font-size: 20px;
+    font-weight: 500;
     line-height: 1.6;
     letter-spacing: -0.01em;
-    color: var(--muted);
+    color: #565a5b;
   }
   .body :global(strong) {
     color: var(--text);
@@ -65,20 +112,91 @@ const id = slugify(title);
     text-underline-offset: 3px;
   }
 
+  /* ---------- Sub-section: banner + text ---------- */
+  .sub {
+    padding-bottom: 40px;
+  }
+  .banner {
+    position: relative;
+    aspect-ratio: 1541 / 293;
+    min-height: 150px;
+    overflow: hidden;
+    container-type: inline-size;
+    background: #1f2633;
+  }
+  .banner--empty {
+    background: var(--placeholder);
+  }
+  .banner__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* Left side darkened + blurred so the title reads on any photo */
+  .banner__shade {
+    position: absolute;
+    inset: 0 55% 0 0;
+    background: linear-gradient(to right, rgba(31, 38, 51, 0.35), rgba(31, 38, 51, 0));
+    pointer-events: none;
+  }
+  .banner--empty .banner__shade {
+    display: none;
+  }
+  .banner__title {
+    position: absolute;
+    left: max(16px, calc(42 / 1541 * 100cqw));
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: 34%;
+    color: #fff;
+    font-size: max(15px, calc(33 / 1541 * 100cqw));
+    line-height: 1.5;
+    letter-spacing: -0.03em;
+  }
+  .banner--empty .banner__title {
+    color: var(--muted);
+  }
+  .sub__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 25px;
+    padding-top: 40px;
+  }
+  .sub__row .body {
+    grid-column: 2;
+  }
+
+  /* ---------- Smaller screens ---------- */
   @media (max-width: 1023px) {
-    .section {
+    .chapter,
+    .sub__row {
       grid-template-columns: minmax(0, 1fr);
+    }
+    .sub__row .body {
+      grid-column: 1;
+    }
+    .chapter {
       row-gap: 20px;
     }
-    .section--2 .heading {
-      font-size: 36px;
+    .sub__row {
+      padding-top: 24px;
     }
-    .section--3 .heading {
-      font-size: 17px;
+    .sub {
+      padding-bottom: 32px;
     }
     .body {
-      font-size: 16px;
-      gap: 20px;
+      font-size: 17px;
+      gap: 22px;
+    }
+    .banner {
+      aspect-ratio: auto;
+      height: 180px;
+    }
+    .banner__title {
+      max-width: 60%;
+      font-size: 15px;
     }
   }
 </style>

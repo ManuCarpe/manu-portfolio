@@ -1,0 +1,67 @@
+---
+// Drip hero artwork layered over the family photo (Figma "section1" 217:2738):
+// Drip logo, floating coin and drop, and the phone rising from the bottom edge.
+// Coordinates are Figma pixels in the 1667 × 1751 hero (--k = 1 Figma px).
+import { Image } from 'astro:assets';
+import logo from '../../assets/case-studies/drip/v3/drip-logo.png';
+import coin from '../../assets/case-studies/drip/v3/coin.png';
+import drop from '../../assets/case-studies/drip/v3/drop.png';
+import phone from '../../assets/case-studies/drip/v3/hero-phone.png';
+---
+
+<Image class="art art--logo" src={logo} alt="Drip" widths={[130, 260, 390]} sizes="130px" />
+<Image class="art art--phone" src={phone} alt="The Drip investment options screen on a phone" widths={[400, 617, 1234]} sizes="(max-width: 1023px) 40vw, 21vw" />
+<Image class="art art--coin" src={coin} alt="" widths={[200, 393, 590]} sizes="(max-width: 1023px) 25vw, 13vw" />
+<Image class="art art--drop" src={drop} alt="" widths={[140, 278, 417]} sizes="(max-width: 1023px) 18vw, 9vw" />
+
+<style>
+  .art {
+    position: absolute;
+    height: auto;
+    max-width: none;
+  }
+  .art--logo {
+    left: 50%;
+    top: calc(88 * var(--k));
+    width: calc(130 * var(--k));
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+  .art--phone {
+    left: calc(525 * var(--k));
+    bottom: 0;
+    width: calc(617 * var(--k));
+    z-index: 3;
+  }
+  .art--coin {
+    left: max(calc(-152 * var(--k)), -24px);
+    top: calc(495 * var(--k));
+    width: calc(393 * var(--k));
+    z-index: 4;
+    animation: float 7s ease-in-out infinite;
+  }
+  .art--drop {
+    left: calc(1295 * var(--k));
+    top: calc(-88 * var(--k));
+    width: calc(278 * var(--k));
+    z-index: 4;
+    animation: float 6s ease-in-out -2s infinite reverse;
+  }
+  @keyframes float {
+    0%,
+    100% {
+      translate: 0 0;
+      rotate: 0deg;
+    }
+    50% {
+      translate: 0 calc(-18 * var(--k));
+      rotate: -5deg;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .art--coin,
+    .art--drop {
+      animation: none;
+    }
+  }
+</style>

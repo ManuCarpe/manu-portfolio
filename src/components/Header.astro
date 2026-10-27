@@ -1,37 +1,40 @@
 ---
-// Site header: "Manu. Design" logo + stacked menu with the letter-roll hover.
-// `active` dims the other menu items (20%) like the Figma inner pages.
-// `solid` adds a progressive blur behind the header: content scrolling underneath gets
-// more blurred (and more tinted with the page colour) the closer it gets to the top edge.
+// Site header: "MANU. STUDIO" wordmark + stacked menu (Home / Case study / Playground / Connect)
+// with the letter-roll hover.
+//   active   which menu item is current; the others are dimmed to 20% like the Figma frames
+//   solid    progressive blur behind the header so content scrolling underneath stays readable
+//   overlay  fixed on top of the page (home page). The home page script switches the active
+//            item and the blur as you scroll through its stages.
+import Logo from './Logo.astro';
 import { site, type NavKey } from '../data/site';
 
-// `condensed` sets the logo and menu in Tanker, as on the case study pages.
 interface Props {
   active?: NavKey;
   solid?: boolean;
-  condensed?: boolean;
+  overlay?: boolean;
 }
 
-const { active, solid = false, condensed = false } = Astro.props;
+const { active, solid = false, overlay = false } = Astro.props;
 ---
 
-<header class:list={['header', 'display', { solid, condensed }]}>
-  {solid && (
-    <div class="pblur" aria-hidden="true">
-      <i></i><i></i><i></i><i></i><i></i><i></i>
-    </div>
-  )}
-  <a href="/" class="logo" aria-label="Manu Design, home">Manu.<br />Design</a>
-  <nav class="nav" aria-label="Primary">
+<header class:list={['header', { solid, overlay }]} data-header>
+  <div class="pblur" aria-hidden="true">
+    <i></i><i></i><i></i><i></i><i></i><i></i>
+  </div>
+  <a href="/" class="logo" aria-label="Manu Studio, home" data-nav-link="home">
+    <Logo class="logo__svg" />
+  </a>
+  <nav class="nav display" aria-label="Primary">
     {site.nav.map((item) => (
       <a
         class:list={['roll', { dim: active && active !== item.key }]}
         href={item.href}
         aria-label={item.label}
         aria-current={active === item.key ? 'page' : undefined}
+        data-nav-link={item.key}
       >
         {[...item.label].map((ch, i) => (
-          <span class="char" aria-hidden="true" style={`--i:${i}`}>{ch === ' ' ? ' ' : ch}</span>
+          <span class="char" aria-hidden="true" style={`--i:${i}`}>{ch === ' ' ? '\u00A0' : ch}</span>
         ))}
       </a>
     ))}
@@ -42,28 +45,65 @@ const { active, solid = false, condensed = false } = Astro.props;
   .header {
     position: sticky;
     top: 0;
-    z-index: 20;
+    z-index: 50;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     padding: var(--pad-y) var(--pad-x);
+    pointer-events: none;
   }
+  .header > * {
+    pointer-events: auto;
+  }
+  .overlay {
+    position: fixed;
+    inset: 0 0 auto;
+  }
+
+  .logo {
+    display: block;
+    color: var(--text);
+  }
+  .logo :global(.logo__svg) {
+    display: block;
+    width: max(64px, calc(189 * var(--u)));
+    height: auto;
+  }
+
+  /* Menu: Barlow Condensed SemiBold 49, 80% line height, -5% tracking */
+  .nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: max(3px, calc(7 * var(--u)));
+    font-size: max(16px, calc(49 * var(--u)));
+    line-height: 0.8;
+    letter-spacing: -0.05em;
+    white-space: nowrap;
+  }
+
   /* ---------- Progressive blur ----------
-     Stacked layers, each blurring a bit more than the last and masked to a shorter
-     band at the top, so the blur ramps smoothly from strong (top) to none (bottom). */
+     Stacked layers, each blurring a bit more than the last and masked to a shorter band at
+     the top, so the blur ramps from strong (top) to none (bottom). Shown with `solid`, or
+     when the home page script adds .is-blurred. */
   .pblur {
     position: absolute;
     inset: 0 0 auto;
     height: calc(100% + 28px);
     z-index: -1;
     pointer-events: none;
-    /* Page-colour tint that fades out too, so text stays readable over busy images */
+    opacity: 0;
+    transition: opacity 0.4s ease;
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--bg) 82%, transparent) 0%,
-      color-mix(in srgb, var(--bg) 55%, transparent) 55%,
+      color-mix(in srgb, var(--bg) 83%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 50%, transparent) 55%,
       transparent 100%
     );
+  }
+  .solid .pblur,
+  :global(.is-blurred) .pblur {
+    opacity: 1;
   }
   .pblur i {
     position: absolute;
@@ -80,46 +120,6 @@ const { active, solid = false, condensed = false } = Astro.props;
   .pblur i:nth-child(5) { --b: 8px;   --from: 12%; --to: 52%; }
   .pblur i:nth-child(6) { --b: 16px;  --from: 0%;  --to: 40%; }
 
-  .logo {
-    font-size: max(22px, calc(63 * var(--u)));
-    line-height: 1.2;
-    white-space: nowrap;
-  }
-
-  .nav {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: calc(7 * var(--u));
-    font-size: max(11px, calc(33 * var(--u)));
-    line-height: 1.2;
-    white-space: nowrap;
-  }
-
-  /* Tanker version (case study pages): taller, tighter type */
-  .condensed {
-    font-family: var(--condensed);
-  }
-  .condensed .logo {
-    font-size: max(28px, calc(79 * var(--u)));
-    line-height: 0.78;
-    letter-spacing: -0.03em;
-  }
-  .condensed .nav {
-    gap: calc(7 * var(--u));
-    font-size: max(15px, calc(44 * var(--u)));
-    letter-spacing: -0.01em;
-  }
-  .condensed .roll,
-  .condensed .nav {
-    line-height: 0.8;
-  }
-  /* Room for the glyphs inside the clipped roll box (Tanker caps sit tall in a 0.8 line) */
-  .condensed .roll {
-    padding-top: 0.12em;
-    margin-top: -0.12em;
-  }
-
   .dim {
     opacity: 0.2;
     transition: opacity 0.25s ease;
@@ -129,12 +129,14 @@ const { active, solid = false, condensed = false } = Astro.props;
     opacity: 1;
   }
 
-  /* Letter-by-letter roll: each letter slides up and an identical copy
-     (drawn with text-shadow 1.6em below, out of view) rolls in, one letter after another */
+  /* Letter-by-letter roll: each letter slides up and an identical copy (drawn with
+     text-shadow 1.6em below, out of view) rolls in, one letter after another.
+     The box is padded so the tall caps aren't clipped by the tight 0.8 line height. */
   .roll {
     display: inline-flex;
     overflow: hidden;
-    line-height: 1.2;
+    padding: 0.12em 0 0.06em;
+    margin: -0.12em 0 -0.06em;
   }
   .char {
     display: inline-block;

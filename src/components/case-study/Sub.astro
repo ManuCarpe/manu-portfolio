@@ -1,0 +1,35 @@
+---
+// A small titled paragraph inside a chapter's text, e.g. "The kid" / "The parent"
+// (Barlow Bold 30, uppercase, then the text).
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<div class="sub">
+  <h3 class="sub__title">{title}</h3>
+  <div class="sub__text"><slot /></div>
+</div>
+
+<style>
+  .sub {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sub__title {
+    font-family: var(--sans);
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  @media (max-width: 1023px) {
+    .sub__title {
+      font-size: 22px;
+    }
+  }
+</style>

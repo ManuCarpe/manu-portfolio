@@ -6,9 +6,9 @@ export const slugify = (text: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-/** Top-level <Section title="…"> titles in a case study file, in order (sub-sections with level={3} are skipped). */
+/** Top-level <Section title="…"> titles in a case study file, in order (sub-sections with level={3} and MDX comments are skipped). */
 export const sectionTitles = (body = '') =>
-  [...body.matchAll(/<Section\b([^>]*)>/g)]
+  [...body.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').matchAll(/<Section\b([^>]*)>/g)]
     .map((m) => m[1])
     .filter((attrs) => !/level=\{?\s*3/.test(attrs) && !/\bwide\b/.test(attrs))
     .map((attrs) => {

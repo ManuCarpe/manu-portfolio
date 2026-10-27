@@ -32,14 +32,11 @@ const { rows, hero = false } = Astro.props;
 </div>
 
 <style>
+  /* Rows of images on the grey page colour, 16px apart */
   .gallery {
     display: flex;
     flex-direction: column;
     gap: 16px;
-  }
-  /* Opening gallery: pull it up to 24px under the title (the page puts --flow-gap between blocks) */
-  .hero {
-    margin-top: calc(24px - var(--flow-gap, 80px));
   }
   .row {
     display: flex;

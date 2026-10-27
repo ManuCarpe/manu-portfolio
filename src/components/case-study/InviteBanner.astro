@@ -1,0 +1,96 @@
+---
+// Kid-flow banner art for "The kid can start first and invite parents" (Figma 217:2808):
+// the teen on her phone, with the "Request sent !" notification popping up beside it.
+import { Image } from 'astro:assets';
+import photo from '../../assets/case-studies/drip/v3/banner-invite.png';
+import avatar from '../../assets/case-studies/drip/anim/invite-avatar.png';
+---
+
+<div class="ib">
+  <Image class="ib__photo" src={photo} alt="A teen smiling at her phone as she invites her parent" widths={[800, 1541, 2312]} sizes="(max-width: 1023px) 100vw, 56vw" />
+  <div class="ib__toast" aria-hidden="true">
+    <div class="ib__inner">
+      <p class="ib__title">Request sent !</p>
+      <p class="ib__who"><Image class="ib__avatar" src={avatar} alt="" widths={[41]} /><span>Charlotte</span></p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .ib {
+    position: absolute;
+    inset: 0;
+    --k: calc(100cqw / 1541); /* 1 Figma px of the banner */
+  }
+  .ib__photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* Notification, tilted like the phone, just above-left of it */
+  .ib__toast {
+    position: absolute;
+    left: calc(560 * var(--k));
+    top: calc(26 * var(--k));
+    transform: rotate(-12deg);
+    transform-origin: 0 100%;
+  }
+  .ib__inner {
+    padding: calc(14 * var(--k)) calc(16 * var(--k)) calc(12 * var(--k));
+    border-radius: calc(12 * var(--k));
+    background: rgba(109, 188, 241, 0.9);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    color: #fff;
+    font-family: var(--sans);
+    white-space: nowrap;
+    animation: ib-toast 5.5s cubic-bezier(0.3, 0.7, 0.2, 1) infinite;
+    transform-origin: 30% 100%;
+  }
+  .ib__title {
+    font-size: calc(24 * var(--k));
+    font-weight: 500;
+    line-height: 1.1;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  .ib__who {
+    display: flex;
+    align-items: center;
+    gap: calc(6 * var(--k));
+    margin-top: calc(10 * var(--k));
+    font-size: calc(14 * var(--k));
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .ib__avatar {
+    width: calc(22 * var(--k));
+    height: calc(22 * var(--k));
+  }
+  @keyframes ib-toast {
+    0%,
+    8% {
+      opacity: 0;
+      transform: translateY(calc(40 * var(--k))) scale(0.85);
+    }
+    18% {
+      opacity: 1;
+      transform: translateY(calc(-3 * var(--k))) scale(1.02);
+    }
+    24%,
+    78% {
+      opacity: 1;
+      transform: none;
+    }
+    90%,
+    100% {
+      opacity: 0;
+      transform: translateY(calc(-14 * var(--k))) scale(0.98);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ib__inner {
+      animation: none;
+    }
+  }
+</style>

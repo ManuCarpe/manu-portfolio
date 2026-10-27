@@ -1,15 +1,21 @@
 ---
-// A large closing statement.
+// A large closing statement, on its own white block.
 ---
 
-<p class="statement"><slot /></p>
+<div class="statement-block"><p class="statement"><slot /></p></div>
 
 <style>
+  .statement-block {
+    background: #fff;
+    border-top: 1px solid var(--bg);
+    padding: max(40px, calc(90 * var(--cu))) max(16px, calc(63 * var(--cu)));
+  }
   .statement {
+    max-width: 34ch;
     color: var(--text);
     font-family: var(--sans);
-    font-size: clamp(26px, 2.4vw, 40px);
-    font-weight: 500;
+    font-weight: 600;
+    font-size: clamp(24px, calc(44 * var(--cu)), 44px);
     line-height: 1.15;
     letter-spacing: -0.02em;
   }

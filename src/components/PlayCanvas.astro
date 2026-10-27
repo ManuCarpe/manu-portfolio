@@ -1,0 +1,298 @@
+---
+// The Playground: an endless canvas of work. Drag (or swipe) to move around; it keeps
+// gliding after you let go, with a motion blur that follows the speed. The edges of the
+// screen are softly blurred. Positions come from src/data/playground.ts.
+//
+// The server renders one tile (three columns); the script clones it as many times as
+// needed to fill the screen and wraps it around as you move.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { columns, columnPeriod, tile } from '../data/playground';
+
+const files = import.meta.glob<{ default: ImageMetadata }>('../assets/playground-v3/*.png', { eager: true });
+const img = (k: string) => files[`../assets/playground-v3/${k}.png`].default;
+---
+
+<div class="canvas" data-canvas data-tile-w={tile.w} aria-label="Playground — drag to explore" role="region">
+  <div class="canvas__world" data-world>
+    <template data-tile>
+      {columns.map((c) => (
+        <div class="col" data-col style={`left:${c.x}px`} data-period={columnPeriod(c)}>
+          <div class="col__run" data-run>
+            {c.pieces.map((p) => (
+              <Image
+                class="piece"
+                src={img(p.k)}
+                alt=""
+                widths={[240, 480, 654]}
+                sizes="(max-width: 1023px) 110px, (max-width: 2200px) 132px, 220px"
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+                style={`top:${p.y}px;height:${p.h}px`}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </template>
+  </div>
+
+  <!-- Soft, progressively blurred edges -->
+  <div class="edge edge--l" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="edge edge--r" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="edge edge--b" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <p class="hint" aria-hidden="true">Drag to explore</p>
+</div>
+
+<style>
+  .canvas {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: var(--bg);
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .canvas.is-dragging {
+    cursor: grabbing;
+  }
+  .canvas__world {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: 0 0;
+    will-change: transform, filter;
+  }
+  .canvas__world :global(.col) {
+    position: absolute;
+    top: 0;
+    width: 218px;
+  }
+  .canvas__world :global(.col__run) {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 218px;
+  }
+  .canvas__world :global(.piece) {
+    position: absolute;
+    left: 0;
+    width: 218px;
+    object-fit: cover;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+
+  /* ---------- Blurred edges (progressive: 3 layers each) ---------- */
+  .edge {
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .edge i {
+    position: absolute;
+    inset: 0;
+    -webkit-backdrop-filter: blur(var(--b));
+    backdrop-filter: blur(var(--b));
+    -webkit-mask-image: linear-gradient(var(--dir), #000 var(--from), transparent 100%);
+    mask-image: linear-gradient(var(--dir), #000 var(--from), transparent 100%);
+  }
+  .edge i:nth-child(1) { --b: 2px; --from: 40%; }
+  .edge i:nth-child(2) { --b: 6px; --from: 20%; }
+  .edge i:nth-child(3) { --b: 14px; --from: 0%; }
+  .edge--l,
+  .edge--r {
+    top: 0;
+    bottom: 0;
+    width: min(14vw, 220px);
+  }
+  .edge--l {
+    left: 0;
+    --dir: to right;
+  }
+  .edge--r {
+    right: 0;
+    --dir: to left;
+  }
+  .edge--b {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: min(16vh, 160px);
+    --dir: to top;
+  }
+
+  .hint {
+    position: absolute;
+    left: 50%;
+    bottom: 24px;
+    z-index: 3;
+    transform: translateX(-50%);
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    font-size: 13px;
+    letter-spacing: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .canvas.was-dragged .hint {
+    opacity: 0;
+  }
+</style>
+
+<script>
+  // Endless, draggable canvas with momentum and speed-based motion blur.
+  type Canvas = {
+    el: HTMLElement;
+    world: HTMLElement;
+    /** canvas offset in Figma px */
+    x: number;
+    y: number;
+    /** extra vertical offset driven by page scroll (set from the home page script) */
+    scrollY: number;
+    vx: number;
+    vy: number;
+    scale: number;
+    cols: { run: HTMLElement; period: number }[];
+    tileW: number;
+  };
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function build(el: HTMLElement): Canvas {
+    const world = el.querySelector<HTMLElement>('[data-world]')!;
+    const tpl = el.querySelector<HTMLTemplateElement>('[data-tile]')!;
+    const tileW = Number(el.dataset.tileW);
+    const c: Canvas = { el, world, x: -207.5, y: -280, scrollY: 0, vx: 0, vy: 0, scale: 1, cols: [], tileW };
+
+    const layout = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      // Desktop follows the 3008px Figma frame but never gets tiny; phones get a fixed scale
+      c.scale = w >= 1024 ? Math.max(w / 3008, 0.55) : 0.5;
+      world.replaceChildren();
+      c.cols = [];
+      const tilesX = Math.ceil(w / c.scale / tileW) + 1;
+      for (let t = 0; t < tilesX; t++) {
+        const frag = tpl.content.cloneNode(true) as DocumentFragment;
+        frag.querySelectorAll<HTMLElement>('[data-col]').forEach((col) => {
+          col.style.left = `${parseFloat(col.style.left) + t * tileW}px`;
+          const run = col.querySelector<HTMLElement>('[data-run]')!;
+          const period = Number(col.dataset.period);
+          // Repeat the column's pieces so it always covers the screen height
+          const reps = Math.ceil(h / c.scale / period) + 1;
+          const first = [...run.children];
+          for (let r = 1; r < reps; r++) {
+            first.forEach((p) => {
+              const copy = p.cloneNode(true) as HTMLElement;
+              copy.style.top = `${parseFloat((p as HTMLElement).style.top) + r * period}px`;
+              run.append(copy);
+            });
+          }
+          c.cols.push({ run, period });
+        });
+        world.append(frag);
+      }
+      render(c);
+    };
+    layout();
+    let rt = 0;
+    window.addEventListener('resize', () => {
+      clearTimeout(rt);
+      rt = window.setTimeout(layout, 150);
+    });
+    return c;
+  }
+
+  const wrap = (v: number, p: number) => ((v % p) + p) % p - p;
+
+  function render(c: Canvas, blur = 0) {
+    const y = c.y - c.scrollY;
+    c.world.style.transform = `scale(${c.scale}) translate3d(${wrap(c.x, c.tileW)}px,0,0)`;
+    c.cols.forEach(({ run, period }) => {
+      run.style.transform = `translate3d(0,${wrap(y, period)}px,0)`;
+    });
+    c.world.style.filter = blur > 0.3 ? `blur(${blur.toFixed(1)}px)` : '';
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-canvas]').forEach((el) => {
+    const c = build(el);
+    (el as any).__canvas = c;
+
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+    let lastT = 0;
+    let raf = 0;
+
+    const tick = () => {
+      if (!dragging) {
+        // Momentum: keep gliding and slow down
+        c.x += c.vx;
+        c.y += c.vy;
+        c.vx *= 0.94;
+        c.vy *= 0.94;
+      }
+      const speed = Math.hypot(c.vx, c.vy) * c.scale;
+      render(c, reduce ? 0 : Math.min(10, speed * 0.6));
+      if (dragging || Math.abs(c.vx) > 0.05 || Math.abs(c.vy) > 0.05) raf = requestAnimationFrame(tick);
+      else {
+        raf = 0;
+        render(c);
+      }
+    };
+    const kick = () => {
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      dragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      lastT = performance.now();
+      c.vx = c.vy = 0;
+      el.classList.add('is-dragging', 'was-dragged');
+      // Touch: only horizontal swipes move the canvas, so vertical swipes still scroll the page
+      if (e.pointerType === 'mouse') el.setPointerCapture(e.pointerId);
+      kick();
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const now = performance.now();
+      const dt = Math.max(1, now - lastT);
+      const dx = (e.clientX - lastX) / c.scale;
+      const dy = e.pointerType === 'mouse' ? (e.clientY - lastY) / c.scale : 0;
+      c.x += dx;
+      c.y += dy;
+      // velocity in Figma px per frame (~16ms)
+      c.vx = (dx / dt) * 16;
+      c.vy = (dy / dt) * 16;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      lastT = now;
+    });
+    const end = () => {
+      if (!dragging) return;
+      dragging = false;
+      el.classList.remove('is-dragging');
+      if (performance.now() - lastT > 80) c.vx = c.vy = 0;
+      kick();
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+    el.addEventListener('lostpointercapture', end);
+
+    // Let the page script move the canvas with scroll
+    el.addEventListener('canvas:scroll', ((e: CustomEvent<number>) => {
+      c.scrollY = e.detail;
+      if (!raf) render(c);
+    }) as EventListener);
+  });
+</script>

@@ -1,0 +1,44 @@
+---
+// A list of points, one paragraph each, starting with a **bold** label.
+//   <Points>
+//     **One question per screen.** Name, mobile, DOB…
+//
+//     **Named checkpoints with warmth.** "Almost there!"…
+//   </Points>
+---
+
+<div class="points"><slot /></div>
+
+<style>
+  .points {
+    display: flex;
+    flex-direction: column;
+    counter-reset: point;
+  }
+  .points > :global(p) {
+    position: relative;
+    padding: 14px 0 14px 40px;
+    border-top: 1px solid var(--divider);
+    line-height: 1.5;
+    counter-increment: point;
+  }
+  .points > :global(p:last-child) {
+    border-bottom: 1px solid var(--divider);
+  }
+  .points > :global(p)::before {
+    content: counter(point, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: calc(14px + 0.3em);
+    font-size: 13px;
+    color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+  /* The bold label sits on its own line, in black */
+  .points > :global(p) > :global(strong) {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--text);
+    font-weight: 600;
+  }
+</style>

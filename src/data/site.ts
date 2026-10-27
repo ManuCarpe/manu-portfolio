@@ -6,13 +6,19 @@ export const site = {
 
   role: 'Product designer',
   experience: '7+ years',
-  email: 'manumackal@gmail.com',
 
-  // Header navigation
+  // Contact (the Connect sheet at the bottom of the home page)
+  email: 'manumackal@gmail.com',
+  phone: '+91 81295 82221',
+  whatsapp: 'https://wa.me/918129582221',
+  location: 'Trivandrum, India',
+
+  // Header navigation. The home page is one long scroll, so these jump to its stages.
   nav: [
-    { key: 'case-study', label: 'Case study', href: '/case-study/' },
-    { key: 'playground', label: 'Playground', href: '/playground/' },
-    { key: 'connect', label: 'Connect', href: 'mailto:manumackal@gmail.com' },
+    { key: 'home', label: 'Home', href: '/' },
+    { key: 'case-study', label: 'Case study', href: '/#case-study' },
+    { key: 'playground', label: 'Playground', href: '/#playground' },
+    { key: 'connect', label: 'Connect', href: '/#connect' },
   ],
 };
 

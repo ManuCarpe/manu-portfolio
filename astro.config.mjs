@@ -8,4 +8,9 @@ export default defineConfig({
   site: 'https://manum.design',
   trailingSlash: 'ignore',
   integrations: [mdx()],
+  // The listing and playground now live on the home page
+  redirects: {
+    '/case-study': '/#case-study',
+    '/playground': '/#playground',
+  },
 });
