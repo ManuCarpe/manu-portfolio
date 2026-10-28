@@ -29,7 +29,9 @@ const { src, alt = '', caption, captionAt = 'top' } = Astro.props;
     aspect-ratio: 681 / 398;
     container-type: inline-size;
     overflow: hidden;
-    border-radius: calc(44.9 * var(--k));
+    /* 44.9px corners on a 681 × 398 card, as percentages: the card's own --k would be
+       measured against the page column (container units look at the parent), not the card */
+    border-radius: 6.593% / 11.281%;
   }
   .visual__img {
     position: absolute;

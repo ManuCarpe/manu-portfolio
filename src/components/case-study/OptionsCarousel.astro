@@ -124,7 +124,8 @@ const { interval = 2.6, caption = 'Investment options as themes, not SKUs.' } = 
     aspect-ratio: 681 / 398;
     container-type: inline-size;
     overflow: hidden;
-    border-radius: calc(44.9 * var(--k));
+    /* 44.9px corners on the 681 × 398 card (see Visual.astro) */
+    border-radius: 6.593% / 11.281%;
     background: #f6eefb;
   }
   .bg {

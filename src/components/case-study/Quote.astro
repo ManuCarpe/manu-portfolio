@@ -1,6 +1,7 @@
 ---
-// A full-width photo banner with a quote set on the right (Figma 223:5516).
-//   <Quote slot="after" src={img} alt="…">The product respects where the interest comes from.</Quote>
+// A full-width photo banner with a quote set on the right (Figma 223:5516), placed between
+// chapters so it spans the whole column.
+//   <Quote src={img} alt="…">The product respects where the interest comes from.</Quote>
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 
@@ -22,7 +23,6 @@ const { src, alt = '' } = Astro.props;
     position: relative;
     margin: 0;
     aspect-ratio: 1465 / 502;
-    min-height: 200px;
     container-type: inline-size;
     overflow: hidden;
   }
@@ -51,10 +51,20 @@ const { src, alt = '' } = Astro.props;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  @media (max-width: 1023px) {
+  /* Phones: a taller crop (set the height, not a min-height — with aspect-ratio that
+     would widen the banner past the screen) */
+  @media (max-width: 767px) {
+    .quote {
+      aspect-ratio: auto;
+      height: 230px;
+    }
+    .quote__img {
+      object-position: 68% 50%;
+    }
     .quote__text {
-      width: 42%;
       right: 16px;
+      width: 46%;
+      font-size: 26px;
     }
   }
 </style>

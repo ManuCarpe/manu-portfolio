@@ -27,10 +27,10 @@ const { src, alt = '', note, title } = Astro.props;
     position: relative;
     margin: 0;
     aspect-ratio: 1465 / 398;
-    min-height: 220px;
     container-type: inline-size;
     overflow: hidden;
-    border-radius: max(16px, calc(44.9 * var(--k)));
+    /* 44.9px corners on the 1465 × 398 card (container units would measure the page column) */
+    border-radius: 3.065% / 11.281%;
     background: #fcf8ff;
   }
   .feature__img {
@@ -67,6 +67,7 @@ const { src, alt = '', note, title } = Astro.props;
   @media (max-width: 767px) {
     .feature {
       aspect-ratio: auto;
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
       gap: 20px;
