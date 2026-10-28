@@ -48,6 +48,8 @@ if (!reduce) {
   ScrollTrigger.config({ ignoreMobileResize: true });
 
   const vh = () => window.innerHeight;
+  // page width without the scrollbar (window.innerWidth includes it on Macs set to show scrollbars)
+  const vw = () => document.documentElement.clientWidth;
 
   // ---------- Home → case studies ----------
   const layer = intro.querySelector<HTMLElement>('[data-layer]')!;
@@ -59,10 +61,10 @@ if (!reduce) {
   cards.forEach((c, i) => (c.style.zIndex = String(10 - Math.round(Math.abs(i - mid) * 2))));
 
   document.documentElement.classList.add('motion-ready');
-  const travel = () => Math.max(0, strip.scrollWidth - window.innerWidth);
+  const travel = () => Math.max(0, strip.scrollWidth - vw());
   const introLength = () => vh() * (INTRO.push + INTRO.pause + INTRO.slide + INTRO.hold);
   // distance from a card's own place to the middle of the screen
-  const toCentre = (el: HTMLElement) => window.innerWidth / 2 - (el.offsetLeft + el.offsetWidth / 2);
+  const toCentre = (el: HTMLElement) => vw() / 2 - (el.offsetLeft + el.offsetWidth / 2);
 
   const introTl = gsap.timeline({
     defaults: { ease: 'none' },
@@ -124,7 +126,7 @@ if (!reduce) {
     const card = (e.target as HTMLElement).closest<HTMLElement>('[data-card]');
     if (!card) return;
     const t = travel();
-    const want = t ? Math.min(1, Math.max(0, (card.offsetLeft + card.offsetWidth / 2 - window.innerWidth / 2) / t)) : 0;
+    const want = t ? Math.min(1, Math.max(0, (card.offsetLeft + card.offsetWidth / 2 - vw() / 2) / t)) : 0;
     const y = introTl.scrollTrigger!.start + vh() * (INTRO.push + INTRO.pause + INTRO.slide * ease(want));
     setSpread(true);
     lenis!.scrollTo(y, { immediate: true, force: true });
@@ -159,10 +161,10 @@ if (!reduce) {
         canvas.dispatchEvent(new CustomEvent('canvas:scroll', { detail: scrolled * 0.45 }));
       },
     });
-    // the pieces rise in from the bottom while the playground slides up into view
+    // the pieces rise in from the bottom once half the playground is on screen
     ScrollTrigger.create({
       trigger: play,
-      start: 'top bottom',
+      start: 'top 50%',
       end: 'top top',
       onUpdate: (self) => canvas.dispatchEvent(new CustomEvent('canvas:enter', { detail: self.progress })),
       onRefresh: (self) => canvas.dispatchEvent(new CustomEvent('canvas:enter', { detail: self.progress })),
@@ -203,7 +205,6 @@ function updateNav() {
     if (on) a.setAttribute('aria-current', 'true');
     else a.removeAttribute('aria-current');
   });
-  header?.classList.toggle('is-blurred', key === 'playground' || key === 'connect');
 }
 
 function go(key: Key, immediate = false) {

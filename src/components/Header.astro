@@ -2,7 +2,7 @@
 // Site header: "MANU. STUDIO" wordmark + stacked menu (Home / Case study / Playground / Connect)
 // with the letter-roll hover.
 //   active   which menu item is current; the others are dimmed to 20% like the Figma frames
-//   solid    progressive blur behind the header so content scrolling underneath stays readable
+//   solid    (kept for compatibility — the progressive blur is now always on)
 //   overlay  fixed on top of the page (home page). The home page script switches the active
 //            item and the blur as you scroll through its stages.
 import Logo from './Logo.astro';
@@ -84,26 +84,19 @@ const { active, solid = false, overlay = false } = Astro.props;
 
   /* ---------- Progressive blur ----------
      Stacked layers, each blurring a bit more than the last and masked to a shorter band at
-     the top, so the blur ramps from strong (top) to none (bottom). Shown with `solid`, or
-     when the home page script adds .is-blurred. */
+     the top, so the blur ramps from strong (top) to none (bottom). Always on, on every page. */
   .pblur {
     position: absolute;
     inset: 0 0 auto;
     height: calc(100% + 28px);
     z-index: -1;
     pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.4s ease;
     background: linear-gradient(
       to bottom,
       color-mix(in srgb, var(--bg) 83%, transparent) 0%,
       color-mix(in srgb, var(--bg) 50%, transparent) 55%,
       transparent 100%
     );
-  }
-  .solid .pblur,
-  :global(.is-blurred) .pblur {
-    opacity: 1;
   }
   .pblur i {
     position: absolute;

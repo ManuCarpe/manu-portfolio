@@ -30,16 +30,17 @@ const [firstWord, ...rest] = site.role.split(' ');
     <!-- ============ Home → Case studies ============ -->
     <section class="intro" id="home" data-intro aria-label="Introduction">
       <div class="hero" data-hero>
-        <Image
+        <div class="hero__figure" data-photo>
+          <Image
           class="hero__photo"
-          data-photo
           src={photo}
           alt="Portrait of Manu Mackal"
           widths={[640, 960, 1280, 1536]}
           sizes="(max-width: 767px) 110vw, 56vh"
           loading="eager"
           fetchpriority="high"
-        />
+          />
+        </div>
         <div class="hero__dim" data-hero-dim aria-hidden="true"></div>
       </div>
 
@@ -119,20 +120,23 @@ const [firstWord, ...rest] = site.role.split(' ');
     height: 100svh;
     overflow: hidden;
   }
-  /* The photo is a cut-out; it fills the height and sits in the middle (Figma: image FIT) */
-  .hero__photo {
+  /* The photo is a cut-out; it fills the height and sits in the middle (Figma: image FIT).
+     The wrapper does the centring, so the scroll animation (scale + drift on the wrapper)
+     never pushes it off-centre, whatever the window size. */
+  .hero__figure {
     position: absolute;
-    left: 50%;
-    bottom: 0;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    overflow: hidden;
+    transform-origin: 50% 35%;
+  }
+  .hero__photo {
+    flex: none;
     height: 100%;
     width: auto;
     max-width: none;
-    transform: translateX(-50%);
-    transform-origin: 50% 35%;
-  }
-  :global(html.motion) .hero__photo {
-    transform: none;
-    translate: -50% 0;
   }
 
   /* Darkens the home screen as the layer pushes up over it (driven by the scroll) */
@@ -173,7 +177,7 @@ const [firstWord, ...rest] = site.role.split(' ');
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: end;
-    padding: 0 var(--pad-x) calc(3 * var(--u));
+    padding: 0 var(--pad-x);
     color: #fff;
     pointer-events: none;
   }
@@ -184,20 +188,22 @@ const [firstWord, ...rest] = site.role.split(' ');
     line-height: calc(207 / 265);
     letter-spacing: -0.03em;
     font-weight: 600;
-    /* trim the empty space under the last line */
-    margin-bottom: calc(-0.08 * 265 * var(--u));
+    /* Baselines as in Figma: "designer" sits 30px (at 3008) above the layer's edge.
+       Barlow Condensed's baseline is 0.01em below the box at this line height. */
+    margin-bottom: calc(32.65 * var(--u));
   }
   .name,
   .years {
     font-size: calc(108 * var(--u));
     line-height: 1;
     letter-spacing: -0.03em;
-    margin-bottom: calc(-0.06 * 108 * var(--u));
+    /* baseline 14px (at 3008) above the edge; at line-height 1 it's 0.1em above the box */
+    margin-bottom: calc(3.2 * var(--u));
   }
   .name {
     position: absolute;
     left: calc(1507.5 / 3008 * 100%);
-    bottom: calc(3 * var(--u));
+    bottom: 0;
   }
   .years {
     justify-self: end;
