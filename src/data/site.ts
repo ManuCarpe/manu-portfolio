@@ -9,8 +9,8 @@ export const site = {
 
   // Contact (the Connect sheet at the bottom of the home page)
   email: 'manumackal@gmail.com',
-  phone: '+91 81295 82221',
-  whatsapp: 'https://wa.me/918129582221',
+  // Paste your profile URL here; the LinkedIn row on the Connect sheet appears once it's set
+  linkedin: '',
   location: 'Trivandrum, India',
 
   // Header navigation. The home page is one long scroll, so these jump to its stages.

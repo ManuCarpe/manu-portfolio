@@ -3,7 +3,7 @@ import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 
 // Full-width rows of images. Images in the same row share one height
-// (each takes width in proportion to its shape), 16px apart — as in the Figma brand gallery.
+// (each takes width in proportion to its shape), 25.6 Figma px apart — as in the Figma brand gallery.
 //   <Gallery rows={[[wide], [left, right]]} />
 //   <Gallery hero rows={…} />  opening gallery: sits 24px under the title, loads first
 interface Props {
@@ -36,11 +36,11 @@ const { rows, hero = false } = Astro.props;
   .gallery {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: calc(25.6 * var(--cu, 1px));
   }
   .row {
     display: flex;
-    gap: 16px;
+    gap: calc(25.6 * var(--cu, 1px));
   }
   .cell {
     min-width: 0;

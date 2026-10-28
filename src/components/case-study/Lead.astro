@@ -1,21 +1,16 @@
 ---
-// The black takeaway line in a section (Barlow SemiBold 26).
+// The black takeaway line (Barlow SemiBold 26 at 3008px).
 ---
 
 <p class="lead"><slot /></p>
 
 <style>
-  .lead {
+  p.lead {
     color: var(--text);
     font-family: var(--sans);
-    font-size: 26px;
+    font-size: max(17px, calc(26 * var(--cu)));
     font-weight: 600;
     line-height: 1.2;
     letter-spacing: -0.01em;
-  }
-  @media (max-width: 1023px) {
-    .lead {
-      font-size: 20px;
-    }
   }
 </style>

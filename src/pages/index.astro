@@ -40,6 +40,7 @@ const [firstWord, ...rest] = site.role.split(' ');
           loading="eager"
           fetchpriority="high"
         />
+        <div class="hero__dim" data-hero-dim aria-hidden="true"></div>
       </div>
 
       <div class="layer" data-layer>
@@ -92,9 +93,8 @@ const [firstWord, ...rest] = site.role.split(' ');
         <div class="sheet__body">
           <a class="sheet__email display" href={`mailto:${site.email}`}>{site.email}</a>
           <ul class="sheet__links">
-            <li><span>WhatsApp</span><a href={site.whatsapp} target="_blank" rel="noopener">{site.phone}</a></li>
+            {site.linkedin && <li><span>LinkedIn</span><a href={site.linkedin} target="_blank" rel="noopener">{site.linkedin.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a></li>}
             <li><span>Based in</span><span>{site.location}</span></li>
-            <li><span>Elsewhere</span><a href="#home" data-nav-link="home">Back to top ↑</a></li>
           </ul>
         </div>
         <p class="sheet__foot">© {new Date().getFullYear()} {site.name}</p>
@@ -133,6 +133,15 @@ const [firstWord, ...rest] = site.role.split(' ');
   :global(html.motion) .hero__photo {
     transform: none;
     translate: -50% 0;
+  }
+
+  /* Darkens the home screen as the layer pushes up over it (driven by the scroll) */
+  .hero__dim {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.22);
+    opacity: 0;
+    pointer-events: none;
   }
 
   /* The layer that pushes up over the home screen and carries the case studies */
@@ -231,6 +240,10 @@ const [firstWord, ...rest] = site.role.split(' ');
     height: 100%;
     object-fit: cover;
     transition: scale 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .card__link:focus-visible {
+    outline: 3px solid #000;
+    outline-offset: 4px;
   }
   .card__link:hover .card__img {
     scale: 1.04;

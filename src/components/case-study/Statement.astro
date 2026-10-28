@@ -1,22 +1,16 @@
 ---
-// A large closing statement, on its own white block.
+// The big closing statement (Barlow Bold 51 at 3008px), in the right column of a <Split>.
 ---
 
-<div class="statement-block"><p class="statement"><slot /></p></div>
+<p class="statement"><slot /></p>
 
 <style>
-  .statement-block {
-    background: #fff;
-    border-top: 1px solid var(--bg);
-    padding: max(40px, calc(90 * var(--cu))) max(16px, calc(63 * var(--cu)));
-  }
-  .statement {
-    max-width: 34ch;
+  p.statement {
     color: var(--text);
     font-family: var(--sans);
-    font-weight: 600;
-    font-size: clamp(24px, calc(44 * var(--cu)), 44px);
-    line-height: 1.15;
-    letter-spacing: -0.02em;
+    font-size: max(24px, calc(51 * var(--cu)));
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
   }
 </style>

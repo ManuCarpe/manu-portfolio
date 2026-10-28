@@ -57,6 +57,12 @@ const img = (k: string) => files[`../assets/playground-v3/${k}.png`].default;
     user-select: none;
     -webkit-user-select: none;
   }
+  /* Soft top edge while the playground slides in (set by the home page script) */
+  .canvas {
+    --fade: 0vh;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade));
+    mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade));
+  }
   .canvas.is-dragging {
     cursor: grabbing;
   }
@@ -156,10 +162,12 @@ const img = (k: string) => files[`../assets/playground-v3/${k}.png`].default;
     y: number;
     /** extra vertical offset driven by page scroll (set from the home page script) */
     scrollY: number;
+    /** 0 → 1 while the playground slides into view (pieces rise into place) */
+    enter: number;
     vx: number;
     vy: number;
     scale: number;
-    cols: { run: HTMLElement; period: number }[];
+    cols: { run: HTMLElement; period: number; k: number }[];
     tileW: number;
   };
 
@@ -169,7 +177,7 @@ const img = (k: string) => files[`../assets/playground-v3/${k}.png`].default;
     const world = el.querySelector<HTMLElement>('[data-world]')!;
     const tpl = el.querySelector<HTMLTemplateElement>('[data-tile]')!;
     const tileW = Number(el.dataset.tileW);
-    const c: Canvas = { el, world, x: -207.5, y: -280, scrollY: 0, vx: 0, vy: 0, scale: 1, cols: [], tileW };
+    const c: Canvas = { el, world, x: -207.5, y: -280, scrollY: 0, enter: 1, vx: 0, vy: 0, scale: 1, cols: [], tileW };
 
     const layout = () => {
       const w = el.clientWidth;
@@ -195,7 +203,7 @@ const img = (k: string) => files[`../assets/playground-v3/${k}.png`].default;
               run.append(copy);
             });
           }
-          c.cols.push({ run, period });
+          c.cols.push({ run, period, k: c.cols.length % 3 });
         });
         world.append(frag);
       }
@@ -215,8 +223,14 @@ const img = (k: string) => files[`../assets/playground-v3/${k}.png`].default;
   function render(c: Canvas, blur = 0) {
     const y = c.y - c.scrollY;
     c.world.style.transform = `scale(${c.scale}) translate3d(${wrap(c.x, c.tileW)}px,0,0)`;
-    c.cols.forEach(({ run, period }) => {
-      run.style.transform = `translate3d(0,${wrap(y, period)}px,0)`;
+    // While entering, each column trails behind and rises into place (staggered left → right)
+    const lift = (k: number) => {
+      if (c.enter >= 1) return 0;
+      const t = Math.min(1, Math.max(0, c.enter * 1.5 - k * 0.22));
+      return (1 - (1 - Math.pow(1 - t, 3))) * (c.el.clientHeight / c.scale) * 0.55;
+    };
+    c.cols.forEach(({ run, period, k }) => {
+      run.style.transform = `translate3d(0,${wrap(y, period) + lift(k)}px,0)`;
     });
     c.world.style.filter = blur > 0.3 ? `blur(${blur.toFixed(1)}px)` : '';
   }
@@ -290,6 +304,12 @@ const img = (k: string) => files[`../assets/playground-v3/${k}.png`].default;
     el.addEventListener('lostpointercapture', end);
 
     // Let the page script move the canvas with scroll
+    // …and to bring the pieces in from the bottom as the playground arrives
+    el.addEventListener('canvas:enter', ((e: CustomEvent<number>) => {
+      c.enter = e.detail;
+      el.style.setProperty('--fade', `${((1 - e.detail) * 45).toFixed(2)}vh`);
+      if (!raf) render(c);
+    }) as EventListener);
     el.addEventListener('canvas:scroll', ((e: CustomEvent<number>) => {
       c.scrollY = e.detail;
       if (!raf) render(c);

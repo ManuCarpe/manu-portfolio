@@ -1,6 +1,8 @@
 # Manu Mackal — Portfolio
 
-Built with [Astro](https://astro.build). Deploys to GitHub Pages automatically on every push to `main`.
+Live at **https://manum.design**. Built with [Astro](https://astro.build); GSAP + Lenis for the
+scroll animation. Every push to `main` rebuilds and publishes the site through GitHub Actions
+(about a minute — watch the repo's **Actions** tab).
 
 ## Run it on your Mac
 
@@ -9,30 +11,52 @@ npm install      # first time, and whenever package.json changes
 npm run dev      # open http://localhost:4321 — updates as you edit
 ```
 
+Publish: commit and push in GitHub Desktop.
+
+## How the site is put together
+
+- **Home (`/`)** is one continuous scroll: portrait → case study cards → playground → Connect.
+  The menu jumps between these stages (`/#case-study`, `/#playground`, `/#connect`).
+  The old `/case-study/` and `/playground/` addresses redirect there.
+- **Case study pages** live at `/case-study/<file-name>/`.
+- Fonts: Barlow + Barlow Condensed (headings, menu), self-hosted in `public/fonts`.
+  Boldonse is only used for Drip's brand lettering.
+
 ## Where to edit things
 
 | What | File |
 | --- | --- |
-| Name, role, years, email, menu links | `src/data/site.ts` |
-| Home page | `src/pages/index.astro` (photo: `src/assets/manu-hero.png`) |
-| Playground images | `src/assets/playground/pNN.png` |
-| Playground layout (grid columns, freeflow positions) | `src/data/playground.ts` |
-| Case studies (one file each) | `src/content/case-studies/*.mdx` — see `drip.mdx` for the building blocks |
-| Case study images | `src/assets/case-studies/` |
-| Colours, fonts, spacing | `src/styles/global.css` |
+| Name, role, years, email, LinkedIn, location, menu | `src/data/site.ts` |
+| Home page layout and the Connect sheet | `src/pages/index.astro` (portrait: `src/assets/home/manu.png`) |
+| Home scroll animation (timing, pacing) | `src/scripts/home.ts` — `INTRO`, `PLAY`, `SPREAD_SECONDS` |
+| Playground images | `src/assets/playground-v3/qNN.png` |
+| Playground layout (three repeating columns) | `src/data/playground.ts` |
+| Case studies (one file each) | `src/content/case-studies/*.mdx` |
+| Case study images | `src/assets/case-studies/` (Drip's in `drip/v4/`) |
+| Case study building blocks | `src/components/case-study/` |
+| Colours, fonts | `src/styles/global.css` |
+| Logo (header + favicon) | `src/components/Logo.astro`, `public/favicon.svg` |
 
-### Add a case study
+### Writing a case study
 
-Copy `src/content/case-studies/reframing.mdx`, rename it (the file name becomes the URL,
-e.g. `fleet-map.mdx` → `/case-study/fleet-map/`), fill in the frontmatter at the top
-(title, summary, cover, client, year, tags, about) and write the sections below it.
-Every `Section` with a title shows up in the page's side menu. Set `draft: true` to hide it.
+Each `.mdx` file starts with frontmatter — title, summary (shown on the home card), cover,
+hero, client, year, tags, about — which fills the card on the home page and the project
+details panel. Below it, the page is built from blocks (`drip.mdx` uses all of them and lists
+them in a comment at the top):
 
-The previous version of the site is kept in `_archive/v1/` for reference. It isn't built or published.
+- `<Section title="…">` — a chapter: heading left, text right. Listed in the Index
+  (`index={false}` leaves it out).
+- `<Lead>` — the black takeaway line.
+- `slot="after"` on a block puts it full width under the chapter heading.
+- `<Split slot="after">` — two columns: `<div slot="visuals">` cards on the left, `<Topic>`s right.
+- `<Topic title="…">` — a titled paragraph; wrap the closing line in `**bold**` to set it in black.
+- `<Visual src caption />` — a lavender image card. `<InviteCard />` and `<OptionsCarousel />` are
+  the animated Drip ones.
+- `<Gallery rows={[[a], [b, c]]} />`, `<Wide src />` — images between chapters.
+- `<Quote src>…</Quote>`, `<Feature src note title />`, `<Statement>` — banners and the closing line.
 
-## Go live on your domain
+To add a case study, copy `reframing.mdx`, rename it (the file name becomes the URL), fill in the
+frontmatter and write the sections. `draft: true` hides it.
 
-1. Push this folder to a GitHub repo.
-2. Repo **Settings → Pages → Source: GitHub Actions**.
-3. Put your domain in `public/CNAME` and in `site` in `astro.config.mjs`.
-4. Repo **Settings → Pages → Custom domain**: enter the same domain, tick **Enforce HTTPS**.
+Older versions of the site and retired components are kept in `_archive/` for reference.
+They aren't built or published.

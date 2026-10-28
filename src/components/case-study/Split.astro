@@ -1,0 +1,52 @@
+---
+// Two columns inside a chapter: visual cards on the left, topics on the right.
+//   <Split slot="after">
+//     <div slot="visuals"> <InviteCard /> <OptionsCarousel /> <Visual … /> </div>
+//     <Topic title="…">…</Topic>
+//   </Split>
+// Leave out the visuals to put text in the right column only.
+const hasVisuals = Astro.slots.has('visuals');
+---
+
+<div class="split">
+  <div class="split__visuals">{hasVisuals && <slot name="visuals" />}</div>
+  <div class="split__text"><slot /></div>
+</div>
+
+<style>
+  .split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: calc(39 * var(--cu));
+    align-items: start;
+  }
+  /* The visual cards sit in a soft white column, 16px apart */
+  .split__visuals > :global(div) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(16 * var(--cu));
+    padding: calc(16 * var(--cu));
+  }
+  .split__visuals:empty {
+    display: block;
+  }
+  .split__text {
+    display: flex;
+    flex-direction: column;
+    gap: max(28px, calc(64 * var(--cu)));
+    min-width: 0;
+  }
+  @media (max-width: 1023px) {
+    .split {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 28px;
+    }
+    .split__visuals:empty {
+      display: none;
+    }
+    .split__visuals > :global(div) {
+      padding: 0;
+      gap: 12px;
+    }
+  }
+</style>

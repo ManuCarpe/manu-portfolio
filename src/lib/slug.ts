@@ -10,7 +10,7 @@ export const slugify = (text: string) =>
 export const sectionTitles = (body = '') =>
   [...body.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').matchAll(/<Section\b([^>]*)>/g)]
     .map((m) => m[1])
-    .filter((attrs) => !/level=\{?\s*3/.test(attrs) && !/\bwide\b/.test(attrs))
+    .filter((attrs) => !/level=\{?\s*3/.test(attrs) && !/\bwide\b/.test(attrs) && !/index=\{false\}/.test(attrs))
     .map((attrs) => {
       const t = attrs.match(/title=(?:"([^"]*)"|\{'([^']*)'\}|\{"([^"]*)"\})/);
       return t ? t[1] ?? t[2] ?? t[3] : null;

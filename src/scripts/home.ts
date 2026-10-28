@@ -1,9 +1,11 @@
 // Home page scroll story: smooth scrolling (Lenis) + scroll-driven animation (GSAP ScrollTrigger).
 //
-//  intro   pinned: the #E0E0E0 layer pushes up over the portrait (which shrinks), carrying the
-//          words on its top edge → the case study cards, stacked in the middle, slide out to
-//          their places → the row scrolls sideways.
-//  play    pinned: the playground canvas drifts with the scroll → the Connect sheet pushes up.
+//  intro   pinned: the #E0E0E0 layer pushes up over the portrait (which shrinks and dims),
+//          carrying the words on its top edge → once it's up, the stacked case study cards
+//          spread out to their places by themselves (not tied to scrolling) → the row scrolls
+//          sideways.
+//  play    the playground pieces rise into place as it arrives → pinned: the canvas drifts with
+//          the scroll → the Connect sheet pushes up over a dimmed playground.
 //
 // Tweak the pacing with the numbers in INTRO and PLAY (in screen-heights of scrolling).
 import gsap from 'gsap';
@@ -12,7 +14,8 @@ import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const INTRO = { push: 1, spread: 0.75, slide: 0.6, hold: 0.3 };
+const INTRO = { push: 1, pause: 0.35, slide: 0.6, hold: 0.3 };
+const SPREAD_SECONDS = 0.9;
 const PLAY = { drift: 0.8, sheet: 0.7 };
 
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -50,13 +53,14 @@ if (!reduce) {
   const layer = intro.querySelector<HTMLElement>('[data-layer]')!;
   const photo = intro.querySelector<HTMLElement>('[data-photo]')!;
   const strip = intro.querySelector<HTMLElement>('[data-strip]')!;
+  const heroDim = intro.querySelector<HTMLElement>('[data-hero-dim]')!;
   const cards = gsap.utils.toArray<HTMLElement>('[data-card]', intro);
   const mid = (cards.length - 1) / 2;
   cards.forEach((c, i) => (c.style.zIndex = String(10 - Math.round(Math.abs(i - mid) * 2))));
 
   document.documentElement.classList.add('motion-ready');
   const travel = () => Math.max(0, strip.scrollWidth - window.innerWidth);
-  const introLength = () => vh() * (INTRO.push + INTRO.spread + INTRO.slide + INTRO.hold);
+  const introLength = () => vh() * (INTRO.push + INTRO.pause + INTRO.slide + INTRO.hold);
   // distance from a card's own place to the middle of the screen
   const toCentre = (el: HTMLElement) => window.innerWidth / 2 - (el.offsetLeft + el.offsetWidth / 2);
 
@@ -73,24 +77,58 @@ if (!reduce) {
   });
   // the layer pushes up; the words ride on its top edge
   introTl.fromTo(layer, { yPercent: 100 }, { yPercent: 0, ease: 'power2.inOut', duration: INTRO.push }, 0);
-  // the portrait shrinks and drifts up a little slower than the page (parallax)
+  // the portrait shrinks, drifts up a little slower than the page (parallax) and dims
   introTl.fromTo(photo, { scale: 1, yPercent: 0 }, { scale: 0.55, yPercent: -14, ease: 'power1.in', duration: INTRO.push }, 0);
-  // cards arrive stacked in the middle…
-  introTl.fromTo(
-    cards,
-    {
-      x: (_i: number, el: HTMLElement) => toCentre(el),
-      rotation: (i: number) => (i - mid) * 4,
-      scale: 0.82,
-    },
-    { x: (_i: number, el: HTMLElement) => toCentre(el), rotation: (i: number) => (i - mid) * 4, scale: 0.82, duration: INTRO.push },
-    0
-  );
-  // …then slide out to their places, left and right
-  introTl.to(cards, { x: 0, rotation: 0, scale: 1, ease: 'power3.inOut', duration: INTRO.spread }, INTRO.push);
-  // then the row scrolls sideways (left → right through the list)
-  introTl.to(strip, { x: () => -travel(), ease: 'power1.inOut', duration: INTRO.slide }, INTRO.push + INTRO.spread);
+  introTl.fromTo(heroDim, { opacity: 0 }, { opacity: 1, duration: INTRO.push }, 0);
+  // the row scrolls sideways (left → right through the list)
+  introTl.to(strip, { x: () => -travel(), ease: 'power1.inOut', duration: INTRO.slide }, INTRO.push + INTRO.pause);
   introTl.to({}, { duration: INTRO.hold });
+
+  // The cards ride up stacked in the middle; once the layer is up they spread out to their
+  // places on their own, and stack again if you scroll back up.
+  const stacked = {
+    x: (_i: number, el: HTMLElement) => toCentre(el),
+    rotation: (i: number) => (i - mid) * 4,
+    scale: 0.82,
+  };
+  const spread = gsap.fromTo(cards, stacked, {
+    x: 0,
+    rotation: 0,
+    scale: 1,
+    duration: SPREAD_SECONDS,
+    ease: 'power3.inOut',
+    stagger: { each: 0.06, from: 'center' },
+    paused: true,
+  });
+  let isSpread = false;
+  const setSpread = (on: boolean) => {
+    if (on === isSpread) return;
+    isSpread = on;
+    on ? spread.play() : spread.reverse();
+  };
+  ScrollTrigger.create({
+    trigger: intro,
+    start: () => introTl.scrollTrigger!.start + vh() * INTRO.push * 0.92,
+    end: 'max',
+    onToggle: (self) => setSpread(self.isActive),
+  });
+  ScrollTrigger.addEventListener('refreshInit', () => {
+    // recompute the stacked positions for the new screen size
+    const p = spread.progress();
+    spread.invalidate().progress(p);
+  });
+
+  // Keyboard: tabbing onto a card scrolls the page to where that card is in view
+  const ease = (q: number) => (q < 0.5 ? Math.sqrt(q / 2) : 1 - Math.sqrt((1 - q) / 2)); // inverse of power1.inOut
+  strip.addEventListener('focusin', (e) => {
+    const card = (e.target as HTMLElement).closest<HTMLElement>('[data-card]');
+    if (!card) return;
+    const t = travel();
+    const want = t ? Math.min(1, Math.max(0, (card.offsetLeft + card.offsetWidth / 2 - window.innerWidth / 2) / t)) : 0;
+    const y = introTl.scrollTrigger!.start + vh() * (INTRO.push + INTRO.pause + INTRO.slide * ease(want));
+    setSpread(true);
+    lenis!.scrollTo(y, { immediate: true, force: true });
+  });
 
   // ---------- Playground → connect ----------
   const sheet = play.querySelector<HTMLElement>('[data-sheet]')!;
@@ -121,11 +159,22 @@ if (!reduce) {
         canvas.dispatchEvent(new CustomEvent('canvas:scroll', { detail: scrolled * 0.45 }));
       },
     });
+    // the pieces rise in from the bottom while the playground slides up into view
+    ScrollTrigger.create({
+      trigger: play,
+      start: 'top bottom',
+      end: 'top top',
+      onUpdate: (self) => canvas.dispatchEvent(new CustomEvent('canvas:enter', { detail: self.progress })),
+      onRefresh: (self) => canvas.dispatchEvent(new CustomEvent('canvas:enter', { detail: self.progress })),
+    });
   }
+
+  // Keyboard: tabbing into the Connect sheet brings it fully up
+  sheet.addEventListener('focusin', () => lenis!.scrollTo(playTl.scrollTrigger!.end, { immediate: true, force: true }));
 
   targets = {
     home: () => 0,
-    'case-study': () => introTl.scrollTrigger!.start + vh() * (INTRO.push + INTRO.spread * 0.9),
+    'case-study': () => introTl.scrollTrigger!.start + vh() * (INTRO.push + INTRO.pause * 0.6),
     playground: () => playTl.scrollTrigger!.start,
     connect: () => playTl.scrollTrigger!.end,
   };

@@ -1,0 +1,32 @@
+---
+// A titled block in the right column (Barlow Bold 32 at 3008px), e.g. "The kid".
+// Wrap the closing takeaway in **bold** to set it in black, as in the design.
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<div class="topic">
+  <h3 class="topic__title">{title}</h3>
+  <slot />
+</div>
+
+<style>
+  .topic {
+    display: flex;
+    flex-direction: column;
+    gap: max(8px, calc(19 * var(--cu)));
+  }
+  .topic__title {
+    font-family: var(--sans);
+    font-size: max(19px, calc(32 * var(--cu)));
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .topic :global(p:not(.lead)) {
+    color: #667174;
+  }
+</style>

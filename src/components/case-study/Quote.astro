@@ -1,0 +1,60 @@
+---
+// A full-width photo banner with a quote set on the right (Figma 223:5516).
+//   <Quote slot="after" src={img} alt="…">The product respects where the interest comes from.</Quote>
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: ImageMetadata;
+  alt?: string;
+}
+const { src, alt = '' } = Astro.props;
+---
+
+<figure class="quote">
+  <Image class="quote__img" src={src} alt={alt} widths={[800, 1465].filter((w) => w <= src.width)} sizes="(max-width: 1023px) 100vw, 48vw" />
+  <blockquote class="quote__text display"><slot /></blockquote>
+</figure>
+
+<style>
+  .quote {
+    --k: calc(100cqw / 1465);
+    position: relative;
+    margin: 0;
+    aspect-ratio: 1465 / 502;
+    min-height: 200px;
+    container-type: inline-size;
+    overflow: hidden;
+  }
+  .quote__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 30% 50%;
+  }
+  .quote__text {
+    position: absolute;
+    right: calc(78 * var(--k));
+    top: 50%;
+    transform: translateY(-50%);
+    width: calc(497 * var(--k));
+    margin: 0;
+    font-size: max(22px, calc(76 * var(--k)));
+    line-height: 0.78;
+    letter-spacing: -0.03em;
+    text-align: right;
+    color: #fff;
+    background: linear-gradient(165deg, #fff 35%, #eed6ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  @media (max-width: 1023px) {
+    .quote__text {
+      width: 42%;
+      right: 16px;
+    }
+  }
+</style>

@@ -1,0 +1,52 @@
+---
+// A lavender visual card from the case study (681 × 398 in Figma) with its faint label.
+//   <Visual src={img} caption="Celebration, not anxiety" />          label top-left
+//   <Visual src={img} caption="…" captionAt="bottom" />              label bottom-left
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: ImageMetadata;
+  alt?: string;
+  caption?: string;
+  captionAt?: 'top' | 'bottom';
+}
+const { src, alt = '', caption, captionAt = 'top' } = Astro.props;
+---
+
+<figure class="visual">
+  <Image class="visual__img" src={src} alt={alt} widths={[681, 1362].filter((w) => w <= src.width)} sizes="(max-width: 1023px) 100vw, 28vw" />
+  {caption && <figcaption class:list={['cap', 'cs-cap', `cap--${captionAt}`]}>{caption}</figcaption>}
+  <slot />
+</figure>
+
+<style>
+  .visual {
+    --k: calc(100cqw / 681);
+    position: relative;
+    margin: 0;
+    width: 100%;
+    aspect-ratio: 681 / 398;
+    container-type: inline-size;
+    overflow: hidden;
+    border-radius: calc(44.9 * var(--k));
+  }
+  .visual__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .cap {
+    position: absolute;
+    left: calc(32 * var(--k));
+    max-width: calc(200 * var(--k));
+  }
+  .cap--top {
+    top: calc(31 * var(--k));
+  }
+  .cap--bottom {
+    bottom: calc(34 * var(--k));
+  }
+</style>

@@ -4,7 +4,7 @@ title: When your users are a kid and their guardian, in the same app
 summary: The product exists to grow financial literacy in the next generation.
 cover: ../../assets/case-studies/cover-family.png
 coverAlt: A teenager laughing with her parents, all holding phones
-hero: ../../assets/case-studies/drip/v3/hero-bg.png
+hero: ../../assets/case-studies/drip/v4/hero-bg.png
 heroAlt: A teenager laughing with her parents, all holding phones
 heroArt: drip
 client: Drip Invest
@@ -20,36 +20,43 @@ about:
 ---
 
 import Section from '../../components/case-study/Section.astro';
-import Sub from '../../components/case-study/Sub.astro';
+import Split from '../../components/case-study/Split.astro';
+import Topic from '../../components/case-study/Topic.astro';
 import Lead from '../../components/case-study/Lead.astro';
-import Points from '../../components/case-study/Points.astro';
 import Gallery from '../../components/case-study/Gallery.astro';
 import Wide from '../../components/case-study/Wide.astro';
+import Visual from '../../components/case-study/Visual.astro';
+import Quote from '../../components/case-study/Quote.astro';
+import Feature from '../../components/case-study/Feature.astro';
 import Statement from '../../components/case-study/Statement.astro';
-import InviteBanner from '../../components/case-study/InviteBanner.astro';
-import OptionsBanner from '../../components/case-study/OptionsBanner.astro';
+import InviteCard from '../../components/case-study/InviteCard.astro';
+import OptionsCarousel from '../../components/case-study/OptionsCarousel.astro';
 
-import brandHero from '../../assets/case-studies/drip/brand-hero.png';
-import brandPoster from '../../assets/case-studies/drip/brand-poster.png';
-import brandGuidelines from '../../assets/case-studies/drip/brand-guidelines.png';
-import brandPosters from '../../assets/case-studies/drip/brand-posters.png';
-import brandIcons from '../../assets/case-studies/drip/brand-icons.png';
-import cafe from '../../assets/case-studies/drip/v3/wide-cafe.png';
-import optionDetail from '../../assets/case-studies/drip/option-detail.png';
+import galKid from '../../assets/case-studies/drip/v4/gal-kid.png';
+import galPoster from '../../assets/case-studies/drip/v4/gal-poster.png';
+import galGuidelines from '../../assets/case-studies/drip/v4/gal-guidelines.png';
+import galPosters from '../../assets/case-studies/drip/v4/gal-posters.png';
+import galIcons from '../../assets/case-studies/drip/v4/gal-icons.png';
+import cafe from '../../assets/case-studies/drip/v4/cafe.png';
+import mapping from '../../assets/case-studies/drip/v4/mapping.png';
+import celebrate from '../../assets/case-studies/drip/v4/card-celebrate.png';
+import law from '../../assets/case-studies/drip/v4/card-law.png';
+import bearable from '../../assets/case-studies/drip/v4/card-bearable.png';
+import flows from '../../assets/case-studies/drip/v4/flows.png';
+import shipped from '../../assets/case-studies/drip/v4/shipped.png';
 
 {/*
-  How to write a case study (the title and hero come from the frontmatter above):
-  - <Section title="…">               a chapter: big heading left, text right; listed in the Index
-  - <Section level={3} title="…" banner={image}>
-                                      a sub-section: wide banner with the title on it, text below.
-                                      Live art instead of a photo: <InviteBanner slot="art" />.
-                                      No banner/art = grey placeholder banner.
-  - <Lead>                            the black takeaway line
-  - <Sub title="…">                   a small titled paragraph (e.g. The kid / The parent)
-  - <Points>                          a numbered list of **bold label** paragraphs
-  - <Gallery rows={[[a], [b, c]]} />  full-width image rows on grey
-  - <Wide src={image} />              one full-width image;  <Wide />  a grey placeholder
-  - <Statement>                       a large closing statement
+  How to write a case study (title, hero and side panel come from the frontmatter above):
+  - <Section title="…">              a chapter: heading left, text right; listed in the Index
+                                     (add index={false} to leave it out of the Index)
+  - <Lead>                           the black takeaway line
+  - slot="after" on a block          puts it full width under the chapter's heading row
+  - <Split slot="after">             two columns: <div slot="visuals"> cards </div> left, topics right
+  - <Topic title="…">                a titled paragraph; **bold** sets the closing line in black
+  - <Visual src caption />           a lavender card;  <InviteCard /> <OptionsCarousel /> are animated ones
+  - <Gallery rows={[[a], [b, c]]} /> image rows between chapters;  <Wide src /> one full-width image
+  - <Quote src>…</Quote>             photo banner with a quote;  <Feature src note title /> wide card
+  - <Statement>                      the big closing statement
 */}
 
 <Section title="What Drip is">
@@ -62,14 +69,14 @@ import optionDetail from '../../assets/case-studies/drip/option-detail.png';
 
 <Gallery
   rows={[
-    [{ src: brandHero, alt: 'A girl holding out a phone showing the Drip welcome screen, with DRIP INVEST lettering behind her' }],
+    [{ src: galKid, alt: 'A girl holding out a phone showing the Drip welcome screen, with DRIP INVEST lettering behind her' }],
     [
-      { src: brandPoster, alt: 'Drip poster: Drip into your future' },
-      { src: brandGuidelines, alt: 'Drip brand guidelines cover, 2023' },
+      { src: galPoster, alt: 'Drip poster: Drip into your future' },
+      { src: galGuidelines, alt: 'Drip brand guidelines cover, 2023' },
     ],
     [
-      { src: brandPosters, alt: 'Three Drip social posters' },
-      { src: brandIcons, alt: 'Drip 3D icons: key, drop, chart and bell' },
+      { src: galPosters, alt: 'Three Drip social posters' },
+      { src: galIcons, alt: 'Drip 3D icons: key, drop, chart and bell' },
     ],
   ]}
 />
@@ -79,13 +86,13 @@ import optionDetail from '../../assets/case-studies/drip/option-detail.png';
 
   <Lead>Two users. Two mental models. One product that had to serve both without compromising either.</Lead>
 
-  <Sub title="The kid">
+  <Topic title="The kid">
     The kid needed the app to feel like something they'd actually open. If the kid flow felt like a bank app, no one would use it — and the mission would quietly fail.
-  </Sub>
+  </Topic>
 
-  <Sub title="The parent">
+  <Topic title="The parent">
     The parent needed the opposite. For a parent to hand a financial app to their child, it had to feel serious, trustworthy, auditable. They're the ones taking the risk.
-  </Sub>
+  </Topic>
 </Section>
 
 <Wide src={cafe} alt="A teen and his mother looking at the Drip app together at a cafe table" />
@@ -98,118 +105,123 @@ import optionDetail from '../../assets/case-studies/drip/option-detail.png';
   <Lead>Different starting points. Same instinct — a safe way to let their kid participate in something they considered important.</Lead>
 </Section>
 
+<Section title="Mapping the finding" index={false}>
+  Both users share one app, but they don't share a view. The architecture had to encode that distinction structurally — from the first screen to the last permission check.
+
+  <Lead>One app. Two user models. One structure that keeps them separate without keeping them apart.</Lead>
+
+  <Wide slot="after" src={mapping} alt="Drip information architecture: the kid's and the parent's screens mapped side by side" />
+
+  <Split slot="after">
+    <Lead>Each user has their own entry point</Lead>
+
+    The kid lands in a home organized around participation — their investment state, a browse surface for investment options, and a chat surface for guided learning.
+
+    The parent lands in a home organized around oversight — account health, financial infrastructure, and the state of their teen's activity.
+  </Split>
+</Section>
+
 <Section title="Designing the kid flow">
   The thesis for the kid flow was simple: every screen the kid sees should be a teaching moment, disguised as a product moment. If a twelve-year-old is going to open a financial app, the app has to earn its place in their day. If it also teaches them how markets work along the way, the mission is working.
-</Section>
 
-<Section level={3} title="The kid can start first and invite parents">
-  <InviteBanner slot="art" />
+  <Split slot="after">
+    <div slot="visuals">
+      <InviteCard />
+      <OptionsCarousel />
+      <Visual src={celebrate} alt="The Drip “You are all set!” screen with a burst of bubbles" caption="Celebration, not anxiety" />
+    </div>
 
-  A teen can download the app and begin before their parent has an account. If the parent hasn't set one up yet, the teen enters the parent's mobile number and the app sends them an invite. The kid is often the one drawn to the idea
+    <Topic title="The kid can start first and invite parents">
+      A teen can download the app and begin before their parent has an account. If the parent hasn't set one up yet, the teen enters the parent's mobile number and the app sends them an invite. The kid is often the one drawn to the idea. **The parent is the gatekeeper, not necessarily the originator.**
+    </Topic>
 
-  <Lead>the parent is the gatekeeper, not necessarily the originator.</Lead>
-</Section>
+    <Topic title="Investment options as themes, not SKUs.">
+      The browse experience shows cards like "Australia 200," "USA 500," "Big Tech," "Battery Tech," "Cyber Security," "Emerging Markets" — each with a one-line thesis. **A twelve-year-old can hold "Big Tech" in their head. They can't hold "VOO."**
+    </Topic>
 
-<Section level={3} title="Investment options as themes, not SKUs.">
-  <OptionsBanner slot="art" />
+    <Topic title="Each option teaches how to evaluate it">
+      Drilling into an option opens the same set of sections every time — About, Risk, Why drip it?, Holdings, Low management fees, To have in mind. The structure is the lesson. Every time the kid explores an option, they encounter the same evaluation framework, until it becomes how they think about any investment. **The structure is the lesson. The framework becomes muscle memory.**
+    </Topic>
 
-  The browse experience shows cards like "Australia 200," "USA 500," "Big Tech," "Battery Tech," "Cyber Security," "Emerging Markets" — each with a one-line thesis. Every option was named and framed to be pedagogical without being condescending.
+    <Topic title="Investing requires articulation">
+      Before the kid can invest, they fill in a short "Why Aussie?" note — explaining why they're making this choice. The parent-set Max Limit is visible above the amount, so the kid feels the guardrail without being blocked. The "Why" field forces the kid to think through their reasoning. The parent can read it later. **A guardrail from the parent. A reason from the kid.**
+    </Topic>
 
-  <Lead>A twelve-year-old can hold "Big Tech" in their head. They can't hold "VOO."</Lead>
-</Section>
-
-<Section level={3} title="Each option teaches how to evaluate it" banner={optionDetail} bannerAlt="A hand holding a phone showing the Australia 200 option and its performance">
-  Drilling into an option opens the same set of sections every time — About, Risk, Why drip it?, Holdings, Low management fees, To have in mind. The structure is the lesson. Every time the kid explores an option, they encounter the same evaluation framework, until it becomes how they think about any investment.
-
-  <Lead>A guardrail from the parent. A reason from the kid.</Lead>
-</Section>
-
-<Section level={3} title="Investing requires articulation">
-  Before the kid can invest, they fill in a short "Why Aussie?" note — explaining why they're making this choice. The parent-set Max Limit is visible above the amount, so the kid feels the guardrail without being blocked. The "Why" field forces the kid to think through their reasoning. The parent can read it later.
-
-  <Lead>The confirmation isn't a receipt. It's a small moment of pride.</Lead>
-</Section>
-
-<Section level={3} title="Celebration, not anxiety">
-  The post-trade screen says "What a Splash!" with a burst of bubbles. Investing is framed as a thing to feel good about, not nervous about. For a first-time investor at any age that affective framing matters — but for a twelve-year-old making their first trade, it matters more.
-</Section>
-
-<Section level={3} title="Home screen — empty state vs populated state">
-  The visual language — the drop metaphor, the gradient illustrations, the "drip" verb — is doing identity work across all of this. It's playful enough to belong on a kid's phone and serious enough that it doesn't feel like a toy to a parent looking over their shoulder.
+    <Topic title="Celebration, not anxiety">
+      The post-trade screen says "What a Splash!" with a burst of bubbles. Investing is framed as a thing to feel good about, not nervous about. For a first-time investor at any age that affective framing matters — but for a twelve-year-old making their first trade, it matters more. **The confirmation isn't a receipt. It's a small moment of pride.**
+    </Topic>
+  </Split>
 </Section>
 
 <Section title="Designing the guardian flow">
   The guardian flow is long. Roughly 35 screens from "I am an adult" to "Welcome to drip." The length wasn't a design choice — it was the honest cost of opening a real investment account for a minor in Australia.
-</Section>
 
-<Section level={3} title="What the law required for onboarding">
-  <Points>
-    **KYC identity verification** against the Australian Government Document Verification Service (DVS)
+  <Split slot="after">
+    <div slot="visuals">
+      <Visual src={law} alt="Legal documents being filed into a folder" caption="What the law required for onboarding" captionAt="bottom" />
+      <Visual src={bearable} alt="The Drip “Almost there!” onboarding screen" caption="How we made it bearable" />
+    </div>
 
-    **AFSL compliance** Target Market Determination, Financial Services, Product Disclosure Statement
+    <Topic title="What the law required for onboarding">
+      **KYC identity verification** against the Australian Government Document Verification Service (DVS)
 
-    **Tax residency declarations** (Anti-Money Laundering and Counter-Terrorism Act 2006)
+      **AFSL compliance** Target Market Determination, Financial Services, Product Disclosure Statement
 
-    **Investor eligibility self-assessment (ASIC)**
+      **Tax residency declarations** (Anti-Money Laundering and Counter-Terrorism Act 2006)
 
-    **Guardian–minor relationship verification** (Medicare card or birth certificate) Funding account setup via Direct Debit Request
-  </Points>
+      **Investor eligibility self-assessment (ASIC)**
 
-  <Lead>None of these were negotiable. The design response wasn't to compress the flow it was to make a long compliance flow feel like a conversation.</Lead>
-</Section>
+      **Guardian–minor relationship verification** (Medicare card or birth certificate) Funding account setup via Direct Debit Request
 
-<Section level={3} title="How we made it bearable">
-  <Points>
-    **One question per screen.** Name, mobile, DOB, address, email — each isolated so the parent is answering a conversation, not filling a form.
+      <Lead>None of these were negotiable. The design response wasn't to compress the flow it was to make a long compliance flow feel like a conversation.</Lead>
+    </Topic>
 
-    **Named checkpoints with warmth.** "Almost there!", "You are ready to be an investor!", "Now, let's set Maria up!" — screens that do emotional work, telling the parent they're almost through.
+    <Topic title="How we made it bearable">
+      **One question per screen.** Name, mobile, DOB, address, email — each isolated so the parent is answering a conversation, not filling a form.
 
-    **Progressive trust-building.** The regulatory documents appear after the parent has invested enough in the flow that reading them feels earned, not like a wall.
+      **Named checkpoints with warmth.** "Almost there!", "You are ready to be an investor!", "Now, let's set Maria up!" — screens that do emotional work, telling the parent they're almost through.
 
-    **Eligibility as self-reflection.** "Are you willing to risk capital loss?" is framed as judgment, not qualification. Answering No routes to a graceful off-ramp.
+      **Progressive trust-building.** The regulatory documents appear after the parent has invested enough in the flow that reading them feels earned, not like a wall.
 
-    **"I'll do it later" as design, not failure.** Funding account setup and document uploads both have skip paths — the parent completes onboarding and finishes these from the right physical location.
-  </Points>
+      **Eligibility as self-reflection.** "Are you willing to risk capital loss?" is framed as judgment, not qualification. Answering No routes to a graceful off-ramp.
 
-  <Lead>The flow can't be short. What it can be is warm, honest, and designed so a parent who makes it through feels respected.</Lead>
+      **"I'll do it later" as design, not failure.** Funding account setup and document uploads both have skip paths — the parent completes onboarding and finishes these from the right physical location.
+
+      <Lead>The flow can't be short. What it can be is warm, honest, and designed so a parent who makes it through feels respected.</Lead>
+    </Topic>
+  </Split>
 </Section>
 
 <Section title="Where the two flows meet">
   The parent and the kid aren't using the app in parallel. They're using it in relationship. Every meaningful design moment in Drip lives at one of these handoff points.
-</Section>
 
-<Section level={3} title="The invite — either direction works">
-  The teen can download the app first and invite the parent, or the parent can start first and invite the teen. Both work. But the design deliberately allows the kid-to-parent path, because the kid is often the pull.
+  <Quote slot="after" src={flows} alt="A young man and his mother each on their phones in a living room">The product respects where the interest comes from.</Quote>
 
-  <Lead>The product respects where the interest comes from.</Lead>
-</Section>
+  <Split slot="after">
+    <Topic title="The invite — either direction works, but the design respects the kid-initiated path">
+      The teen can download the app first and invite the parent, or the parent can start first and invite the teen. Both work. But the design deliberately allows the kid-to-parent path, because the kid is often the pull.
+    </Topic>
 
-<Section level={3} title="Parental controls — the quiet heart of the product">
-  After KYC, during teen setup, the parent configures what investment options the kid can see. ASX200. S&P500. Big Tech. Emerging Markets. Ethical/ESG. Battery Tech. Commodity. The parent decides, with toggles, which categories appear in the kid's browse experience. The kid then explores and chooses within that bounded set.
+    <Topic title="Parental controls — the quiet heart of the product">
+      After KYC, during teen setup, the parent configures what investment options the kid can see. ASX200. S&P500. Big Tech. Emerging Markets. Ethical/ESG. Battery Tech. Commodity. The parent decides, with toggles, which categories appear in the kid's browse experience. The kid then explores and chooses within that bounded set. **The parent shapes the possibility space. The kid plays inside it.**
+    </Topic>
 
-  <Lead>The parent shapes the possibility space. The kid plays inside it.</Lead>
-</Section>
+    <Topic title="The spend limit — a felt guardrail, not a blocked trade">
+      The parent sets a maximum per-trade amount. The kid sees it as "Max Limit" above the amount field on the investing screen. They feel the guardrail without being blocked by it. **If the kid wants to invest more, that's a conversation to have at the dinner table — the product stays out of it.**
+    </Topic>
 
-<Section level={3} title="The spend limit — a felt guardrail, not a blocked trade">
-  The parent sets a maximum per-trade amount. The kid sees it as "Max Limit" above the amount field on the investing screen. They feel the guardrail without being blocked by it.
-
-  <Lead>If the kid wants to invest more, that's a conversation to have at the dinner table — the product stays out of it.</Lead>
-</Section>
-
-<Section level={3} title={'The "Why" field — asynchronous accountability'}>
-  Before the kid confirms a trade, they write a short note explaining their choice. The parent reads it later. A lightweight accountability loop — pedagogical for the kid, reassuring for the parent.
-
-  <Lead>The kid articulates. The parent reviews. The interface stays out of the way</Lead>
+    <Topic title={'The "Why" field — asynchronous accountability'}>
+      Before the kid confirms a trade, they write a short note explaining their choice. The parent reads it later. A lightweight accountability loop — pedagogical for the kid, reassuring for the parent. **The kid articulates. The parent reviews. The interface stays out of the way.**
+    </Topic>
+  </Split>
 </Section>
 
 <Section title="What shipped and what came next">
   Drip launched in Australia in 2022 through BetterLabs, a Perth-based corporate venture fund. The product shipped end-to-end — guardian onboarding, kid onboarding, investment options, trading, settings, parental controls — as a complete, compliant, live investment platform for families.
 
-  In July 2025, Drip joined ASX-listed Raiz Invest (ASX: RZI) — Australia's largest micro-investing platform. Drip's users and audience were brought into Raiz's Kids offering. The product officially sunset on 11 August 2025.
+  <Feature slot="after" src={shipped} alt="Press article: Investing app for teens Drip Invest becomes part of ASX-listed Raiz" note="In July 2025, Drip joined ASX-listed Raiz Invest (ASX: RZI) — Australia's largest micro-investing platform" title="A mission scaling, not ending." />
 
-  <Lead>A mission scaling, not ending.</Lead>
+  <Split slot="after">
+    <Statement>For a product designed as a mission to change how families talk about money, joining a larger, publicly listed platform with national reach was the mission scaling, not ending. The design work I did lives on in the audience that was handed over — thousands of Australian families who had their first conversation about investing through Drip's interface before being migrated to Raiz Kids.</Statement>
+  </Split>
 </Section>
-
-<Wide />
-
-<Statement>For a product designed as a mission to change how families talk about money, joining a larger, publicly listed platform with national reach was the mission scaling, not ending. The design work I did lives on in the audience that was handed over — thousands of Australian families who had their first conversation about investing through Drip's interface before being migrated to Raiz Kids.</Statement>

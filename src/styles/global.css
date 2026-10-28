@@ -202,3 +202,17 @@ html.lenis body {
 [hidden] {
   display: none !important;
 }
+
+/* Case study visual cards: the faint purple label in a corner (Barlow Bold 16 at 3008px).
+   Needs --k = 1 Figma px of the 681px-wide card. */
+.cs-cap {
+  margin: 0;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: max(9px, calc(16 * var(--k)));
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: rgba(95, 51, 130, 0.37);
+  z-index: 20;
+}

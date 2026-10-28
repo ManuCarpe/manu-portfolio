@@ -1,0 +1,65 @@
+---
+// "The kid can start first and invite parents" card (Figma 223:5347): the teen on her phone,
+// with the "Request sent to Charlotte" notification and the bell popping up in a loop.
+// Positions are Figma pixels of the 681 × 398 card.
+import { Image } from 'astro:assets';
+import Visual from './Visual.astro';
+import bg from '../../assets/case-studies/drip/v4/card-invite.png';
+import toast from '../../assets/case-studies/drip/v4/toast.png';
+import bell from '../../assets/case-studies/drip/v4/bell.png';
+---
+
+<Visual src={bg} alt="A teen smiling at her phone after sending her parent an invite" caption="The kid can start first and invite parents" captionAt="bottom">
+  <Image class="toast" src={toast} alt="" widths={[300, 741]} sizes="(max-width: 1023px) 40vw, 12vw" />
+  <Image class="bell" src={bell} alt="" widths={[130, 263]} sizes="(max-width: 1023px) 15vw, 5vw" />
+</Visual>
+
+<style>
+  .toast,
+  .bell {
+    position: absolute;
+    height: auto;
+  }
+  .toast {
+    left: calc(160 * var(--k));
+    top: calc(59 * var(--k));
+    width: calc(269 * var(--k));
+    animation: pop 5.5s cubic-bezier(0.3, 0.7, 0.2, 1) infinite;
+    transform-origin: 80% 100%;
+  }
+  .bell {
+    left: calc(419 * var(--k));
+    top: calc(16 * var(--k));
+    width: calc(103 * var(--k));
+    animation: pop 5.5s cubic-bezier(0.3, 0.7, 0.2, 1) 0.25s infinite;
+    transform-origin: 50% 100%;
+  }
+  /* Pop up, hold, drift away, repeat */
+  @keyframes pop {
+    0%,
+    6% {
+      opacity: 0;
+      transform: translateY(calc(40 * var(--k))) scale(0.85);
+    }
+    16% {
+      opacity: 1;
+      transform: translateY(calc(-3 * var(--k))) scale(1.03);
+    }
+    22%,
+    80% {
+      opacity: 1;
+      transform: none;
+    }
+    92%,
+    100% {
+      opacity: 0;
+      transform: translateY(calc(-14 * var(--k))) scale(0.98);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast,
+    .bell {
+      animation: none;
+    }
+  }
+</style>
