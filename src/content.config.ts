@@ -17,8 +17,8 @@ const caseStudies = defineCollection({
       // Case study page
       hero: image().optional(),
       heroAlt: z.string().default(''),
-      /** Extra artwork layered on the hero (drip: logo, coin, drop and phone) */
-      heroArt: z.enum(['none', 'drip']).default('none'),
+      /** Extra artwork layered on the hero (drip: logo, coin, drop and phone; armada: logo and iPad) */
+      heroArt: z.enum(['none', 'drip', 'armada']).default('none'),
       client: z.string().optional(),
       year: z.string().optional(),
       tags: z.array(z.string()).default([]),

@@ -7,6 +7,7 @@ import { Image } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import Header from '../../components/Header.astro';
 import DripHeroArt from '../../components/case-study/DripHeroArt.astro';
+import ArmadaHeroArt from '../../components/case-study/ArmadaHeroArt.astro';
 import { site } from '../../data/site';
 import { slugify, sectionTitles } from '../../lib/slug';
 
@@ -96,7 +97,7 @@ const sections = sectionTitles(study.body).map((t) => ({ title: t, id: slugify(t
             <Image
               class="hero__bg"
               src={hero}
-              alt={heroArt === 'drip' ? '' : heroAlt}
+              alt={heroArt === 'none' ? heroAlt : ''}
               widths={[800, 1200, 1667, 2400].filter((w) => w <= hero.width * 1.5)}
               sizes="(max-width: 1023px) 100vw, 56vw"
               loading="eager"
@@ -105,6 +106,7 @@ const sections = sectionTitles(study.body).map((t) => ({ title: t, id: slugify(t
           )}
           <h1 class="hero__title display">{title}</h1>
           {heroArt === 'drip' && <DripHeroArt />}
+          {heroArt === 'armada' && <ArmadaHeroArt />}
         </header>
 
         <Content />
@@ -290,8 +292,13 @@ const sections = sectionTitles(study.body).map((t) => ({ title: t, id: slugify(t
     aspect-ratio: 1667 / 1100;
     background: #1f2633;
   }
-  .hero--drip {
+  .hero--drip,
+  .hero--armada {
     aspect-ratio: 1667 / 1415;
+  }
+  /* the iPad runs off the bottom edge */
+  .hero--armada {
+    overflow: hidden;
   }
   .hero__bg {
     position: absolute;
@@ -299,6 +306,10 @@ const sections = sectionTitles(study.body).map((t) => ({ title: t, id: slugify(t
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+  .hero--armada .hero__title {
+    top: calc(272.5 * var(--k));
+    width: calc(1023 * var(--k));
   }
   .hero--none::after {
     content: '';
@@ -354,7 +365,8 @@ const sections = sectionTitles(study.body).map((t) => ({ title: t, id: slugify(t
       padding: 0;
       margin: 0 calc(-1 * var(--pad-x));
     }
-    .hero__title {
+    .hero__title,
+    .hero--armada .hero__title {
       font-size: calc(150 * var(--k));
       width: calc(1300 * var(--k));
     }

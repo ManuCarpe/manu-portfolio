@@ -1,5 +1,6 @@
 ---
-// A titled block in the right column (Barlow Bold 32 at 3008px), e.g. "The kid".
+// A titled block in the right column (Barlow Bold 32 at 3008px, uppercase), e.g. "The kid".
+// Leave out the text to use just the title as a closing line.
 // Wrap the closing takeaway in **bold** to set it in black, as in the design.
 interface Props {
   title: string;
@@ -21,12 +22,13 @@ const { title } = Astro.props;
   .topic__title {
     font-family: var(--sans);
     font-size: max(19px, calc(32 * var(--cu)));
+    text-transform: uppercase;
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.01em;
     color: var(--text);
   }
-  .topic :global(p:not(.lead)) {
+  .topic :global(p:not(.lead, .callout)) {
     color: #667174;
   }
 </style>

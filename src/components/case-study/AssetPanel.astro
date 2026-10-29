@@ -1,0 +1,141 @@
+---
+// "A live asset count panel" card (Figma 243:10769), animated: a mouse pointer moves down the
+// asset list, each row lights up as it's hovered and swaps its count for "View filtered ›",
+// as in the product. Positions are Figma px of the 425 × 482 card.
+import Visual from './Visual.astro';
+import panel from '../../assets/case-studies/fleet-map/panel.png';
+import cursor from '../../assets/case-studies/fleet-map/svg/cursor.svg';
+
+// Rows the pointer visits (top edge, Figma px): Starlink then SD-WAN — Online, Offline, Critical, Warning
+const rows = [114.2, 133.3, 152.4, 171.5, 221, 240, 259.1, 278.2];
+
+interface Props {
+  caption?: string;
+}
+const { caption = 'A live asset count panel' } = Astro.props;
+---
+
+<Visual tone="dark" src={panel} alt="Fleet Map with the total asset count panel open: Starlink and SD-WAN broken down by online, offline, critical and warning" caption={caption} captionAt="bottom">
+  <div class="ap" data-asset-panel data-rows={JSON.stringify(rows)} aria-hidden="true">
+    <div class="ap__row" data-row></div>
+    <span class="ap__chip" data-chip>View filtered <svg viewBox="0 0 6 10" class="ap__chev"><path d="M1 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.2" /></svg></span>
+    <img class="ap__cursor" data-cursor src={cursor.src} alt="" />
+  </div>
+</Visual>
+
+<script>
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<HTMLElement>('[data-asset-panel]').forEach((el) => {
+    const rows: number[] = JSON.parse(el.dataset.rows || '[]');
+    const row = el.querySelector<HTMLElement>('[data-row]')!;
+    const chip = el.querySelector<HTMLElement>('[data-chip]')!;
+    const on = (v: boolean) => [row, chip].forEach((n) => n.classList.toggle('on', v));
+    const cur = el.querySelector<HTMLElement>('[data-cursor]')!;
+    // Pointer tip is at (10.4, 4.3) inside the 37px cursor image
+    const point = (x: number, y: number) => {
+      el.style.setProperty('--cx', String(x - 10.4));
+      el.style.setProperty('--cy', String(y - 4.3));
+    };
+    const rest = () => point(330, 400);
+    const steps: (() => void)[] = [];
+    // idle on the map, then down the list, then back out
+    steps.push(() => { on(false); rest(); });
+    rows.forEach((y, i) => {
+      steps.push(() => {
+        point(150 + (i % 2) * 14, y + 10);
+        el.style.setProperty('--ry', String(y));
+        on(true);
+      });
+    });
+    steps.push(() => { on(false); rest(); });
+
+    if (reduce) {
+      point(170.4, 181.3);
+      el.style.setProperty('--ry', '171.5');
+      on(true);
+      return;
+    }
+    rest();
+    let i = 0;
+    let timer: number | undefined;
+    const tick = () => {
+      steps[i % steps.length]();
+      i++;
+      timer = window.setTimeout(tick, i % steps.length === 1 ? 1600 : 950);
+    };
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !timer) tick();
+      if (!e.isIntersecting) {
+        window.clearTimeout(timer);
+        timer = undefined;
+      }
+    }).observe(el);
+  });
+</script>
+
+<style>
+  .ap {
+    --cx: 330;
+    --cy: 400;
+    --ry: 114.2;
+    /* no z-index here: it would isolate the row highlight from the screenshot underneath and
+       stop the "lighten" blend from working */
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  /* The hovered row: lifts the row to #192A30 (lighten keeps the text and icons on top) */
+  .ap__row {
+    position: absolute;
+    left: calc(24.3 * var(--k));
+    top: calc(var(--ry) * var(--k));
+    width: calc(178.7 * var(--k));
+    height: calc(19.1 * var(--k));
+    border-radius: calc(3 * var(--k));
+    background: #192a30;
+    mix-blend-mode: lighten;
+    opacity: 0;
+    /* waits for the pointer to arrive before lighting up */
+    transition:
+      top 0.3s cubic-bezier(0.3, 0.7, 0.2, 1) 0.4s,
+      opacity 0.2s ease 0.4s;
+  }
+  .ap__row.on,
+  .ap__chip.on {
+    opacity: 1;
+  }
+  /* "View filtered ›" replaces the count on the hovered row */
+  .ap__chip {
+    position: absolute;
+    right: calc((425 - 24.3 - 178.7 + 2.5) * var(--k));
+    top: calc((var(--ry) + 1.5) * var(--k));
+    opacity: 0;
+    /* waits for the pointer to arrive before lighting up */
+    transition:
+      top 0.3s cubic-bezier(0.3, 0.7, 0.2, 1) 0.4s,
+      opacity 0.2s ease 0.4s;
+    height: calc(16 * var(--k));
+    padding-left: calc(8 * var(--k));
+    display: flex;
+    align-items: center;
+    gap: calc(3 * var(--k));
+    background: #192a30;
+    color: #fff;
+    font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+    font-size: calc(9.1 * var(--k));
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+  .ap__chev {
+    width: calc(4 * var(--k));
+    height: calc(7 * var(--k));
+  }
+  .ap__cursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(37 * var(--k));
+    transform: translate(calc(var(--cx) * var(--k)), calc(var(--cy) * var(--k)));
+    transition: transform 0.7s cubic-bezier(0.45, 0, 0.2, 1);
+  }
+</style>

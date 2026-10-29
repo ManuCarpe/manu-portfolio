@@ -1,17 +1,169 @@
 ---
 order: 1
 title: Reframing a core feature after watching users skip it
-summary: Designed Drip, an Australian micro-investing app where kids learn to invest and parents stay in control.
+summary: The screen where thousands of connected devices become one view.
 cover: ../../assets/case-studies/cover-drone.png
 coverAlt: A drone flying over a desert at dusk, an operator watching
-hero: ../../assets/case-studies/cover-drone.png
-heroAlt: A drone flying over a desert at dusk, an operator watching
+hero: ../../assets/case-studies/fleet-map/hero-bg.png
+heroAlt: A drone flying at dusk over a desert while an operator watches
+heroArt: armada
+client: Armada
+tags:
+  - End-to-end product design
+  - Enterprise SaaS
+  - Edge infrastructure
+  - Behavioural research
+about:
+  - I own the design of Fleet Map end-to-end — shipped V1, studied how real customers used it, and am currently leading V2.
+  - Fleet Map sits inside Atlas, Armada's platform for monitoring edge infrastructure across 100+ countries, 2,000+ enterprise users and 30,000+ connected assets.
 ---
 
 import Section from '../../components/case-study/Section.astro';
+import Split from '../../components/case-study/Split.astro';
+import Topic from '../../components/case-study/Topic.astro';
+import Lead from '../../components/case-study/Lead.astro';
+import Callout from '../../components/case-study/Callout.astro';
+import Gallery from '../../components/case-study/Gallery.astro';
+import Wide from '../../components/case-study/Wide.astro';
+import Visual from '../../components/case-study/Visual.astro';
+import Statement from '../../components/case-study/Statement.astro';
+import FleetPinMap from '../../components/case-study/FleetPinMap.astro';
+import AssetPanel from '../../components/case-study/AssetPanel.astro';
 
-{/* Placeholder page — write the real case study here (see drip.mdx for the building blocks). */}
+import galleon from '../../assets/case-studies/fleet-map/gal-galleon.png';
+import brand from '../../assets/case-studies/fleet-map/gal-brand.png';
+import research from '../../assets/case-studies/fleet-map/research.png';
+import weather from '../../assets/case-studies/fleet-map/weather.png';
+import starlink from '../../assets/case-studies/fleet-map/starlink.png';
+import adoption from '../../assets/case-studies/fleet-map/adoption.png';
 
-<Section title="Coming soon">
-  This case study is being written. In the meantime, have a look at the others from the side menu.
+{/* Building blocks: see the comment at the top of drip.mdx. */}
+
+<Section title="What Fleet Map is">
+  Fleet Map is the screen operators open to see every piece of connected hardware they manage — where it is in the world, whether it's working, and what needs attention right now.
+
+  It sits inside Atlas, Armada's platform for monitoring edge infrastructure. Atlas is one of four products in the Armada Edge Platform — alongside Galleon (ruggedized mobile data centers), Leviathan (GPU-dense super intelligence infrastructure), and Bridge (GPU-as-a-Service for sovereign cloud). The platform runs across 100+ countries, with 2,000+ enterprise users and 30,000+ connected assets.
+
+  <Lead>The screen where thousands of connected devices become one view. I own the design of Fleet Map end-to-end — shipped V1, studied how real customers used it, and am currently leading V2.</Lead>
+</Section>
+
+<Gallery
+  rows={[
+    [{ src: galleon, alt: 'Armada Galleon modular data centers and cooling units on a platform' }],
+    [{ src: brand, alt: 'Armada brand panels: “Welcome to the new edge”, a portrait, “Armada’s mission is clear” and the Armada mark' }],
+  ]}
+/>
+
+<Section title="The design problem">
+  Fleet Map was part of Atlas's visual identity before it was part of its operational core. It plotted customer assets on a world map by address. That was the entire function. Open the map, see where things were. Close the map, do your actual work somewhere else in Atlas.
+
+  For sales, Fleet Map worked. It was visually compelling, globally scaled, exactly what a demo needs. For operators doing real work, it was decorative.
+
+  <Lead>Visually sellable. Operationally hollow.</Lead>
+
+  <Topic title="My job was to close that gap">
+    To turn Fleet Map from a demonstration of what Atlas monitored into a working surface for how operators monitor it. Specifically, that meant giving operators three things the V1 map didn't:
+  </Topic>
+
+  <Lead>Spatial awareness that actually tells them something<br />Movement in real time<br />Context between assets and their environment</Lead>
+</Section>
+
+<FleetPinMap />
+
+<Section title="The question I pushed to ask">
+  Before V2 planning started, the team had the next round of features scoped. More filters. Richer tooltips. Additional layers. All reasonable things to add if V1 was already working.
+
+  Before adding more to a feature that wasn't doing much work, I wanted to understand what operators were actually doing with it. Not what we assumed. Not what the mocks implied. What the sessions showed.
+
+  <Lead>Before building the next layer, I wanted to see what was happening on the current one.</Lead>
+
+  <Lead>Ran a qualitative behavioural analysis using Datadog session replays across multiple customer accounts</Lead>
+
+  Measured the actual sequence of clicks, hovers, scrolls, and abandonments inside Fleet Map. Not survey data. Not what users said they did. What they did.
+</Section>
+
+<Section title="What the research showed">
+  The pattern across sessions was consistent. Fleet Map wasn't competing with other tools in Atlas for operator attention. It wasn't losing to Global Search. It was simply skipped because there was nothing in it worth stopping for.
+
+  <Lead>Fleet Map wasn't broken. It was hollow — there was nothing worth staying for.</Lead>
+
+  <Lead>Operators went straight to Global Search<br />When they did open it, they were verifying, not discovering<br />Customers with small fleets skipped the map altogether<br />The asset detail page was where operators actually worked</Lead>
+
+  Taken together, the research confirmed what the three gaps from section 2 implied all along. Spatial awareness, real-time movement, environmental context. V2 would be built around closing them.
+
+  <Wide slot="after" src={research} alt="A Datadog session replay of Fleet Map next to its session summary and click events" caption="Datadog session replays across multiple customer accounts" />
+</Section>
+
+<Section title="What changed in V2">
+  V2 wasn't a redesign. It was a repositioning — Fleet Map stopped being a static plot of asset locations and became a working surface for monitoring distributed hardware in real time.
+
+  <Lead>Not a redesign. A repositioning.</Lead>
+
+  <Split slot="after">
+    <div slot="visuals">
+      <AssetPanel />
+      <Visual tone="dark" src={weather} alt="Fleet Map with the weather layers panel open over a world map" caption="Real-time weather" captionAt="bottom" />
+      <Visual tone="dark" src={starlink} alt="A Starlink terminal inside a red H3 hexagon on the map, with the Starlink performance panel listing terminals" caption="Starlink performance heatmap" captionAt="bottom" />
+    </div>
+
+    <Topic title="Closing the spatial awareness gap">
+      **The opening shifted from "narrow this down" to "here's the shape of your operation."** V1 opened with a filter bar, asking operators to narrow before they'd seen anything. V2 opens with a summary of state — total assets, critical alerts, counts of what needs attention. The map stops asking for work before it offers something.
+    </Topic>
+
+    <Topic title="A live asset count panel">
+      Provides a persistent health readout that updates with filters — Fleet Map now reads the state of the fleet before an operator zooms into any specific part.
+    </Topic>
+
+    <Topic title="Hover became a working interaction, not a preview">
+      Categorized information assets grouped by type and status, with the ability to filter from inside the hover itself.
+    </Topic>
+
+    <Topic title="Closing the real-time movement gap">
+      **Information scales with zoom and attention.** Clusters resolve into individual assets as operators zoom in. Live status and operational signals surface at the level of detail that matters at each scale.
+    </Topic>
+
+    <Topic title="Closing the environmental context gap">
+      **Real-time weather, correlated with device performance.** Categorized information assets grouped by type and status, with the ability to filter from inside the hover itself.
+    </Topic>
+
+    <Topic title="Starlink performance heatmap">
+      **Uses H3 hexagonal grids to show terminal performance patterns across a region. Patterns tell a story that individual asset status can't.**
+    </Topic>
+
+    <Topic title="V2 turned Fleet Map from a plotting tool into a sense-making one." />
+  </Split>
+</Section>
+
+<Section title="What the data showed after V2">
+  A month into V2, I ran an engagement and adoption evaluation across the three features designed to close the environmental context and spatial awareness gaps. The data confirmed what the reframe was built on — operators were using the layers that mattered to their operational reality, and using them in the way the research had predicted.
+
+  <Split slot="after">
+    <div slot="visuals">
+      <Visual tone="dark" src={adoption} alt="Adoption table of Fleet Map views and map clicks per customer, with customer names blurred" />
+    </div>
+
+    <Topic title="What customers did">
+      Over 360 interactions across 25+ enterprise customers in a month — on features that had been built around a specific hypothesis about what operators needed.
+
+      <Callout>Adoption confirmed the reframe. Fleet Map was being used because it was useful.</Callout>
+    </Topic>
+
+    <Topic title="How they used it">
+      The behavioural pattern inside the sessions was more interesting than the volume. Operators weren't toggling weather because it was there. They were toggling it in direct relation to asset performance — turning on weather layers when assets showed degraded connectivity or operational signals. The environmental context gap identified in section 2 wasn't a hypothesis anymore. It was the live use case.
+
+      <Lead>Operators were using weather as a diagnostic layer, not a decorative one.</Lead>
+    </Topic>
+
+    <Topic title="What's still friction">
+      The adoption evaluation also surfaced friction.
+
+      <Lead>Switching between metric toggles felt sluggish — operators lost context moving between measurements</Lead>
+
+      <Lead>The H3 overlay had no visible dismiss control, so operators who closed the panel had no way to turn the overlay off without reopening it</Lead>
+
+      <Lead>Several replays showed operators clicking the heatmap toolbar button expecting it to toggle the overlay off, when it was actually meant to open the panel</Lead>
+    </Topic>
+
+    <Statement>Phase 2 is where I'd address this — making the overlay directly dismissable, surfacing metric switching inline on the map, and treating the panel as a settings surface rather than a required control plane.</Statement>
+  </Split>
 </Section>

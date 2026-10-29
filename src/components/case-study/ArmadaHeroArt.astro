@@ -1,0 +1,32 @@
+---
+// Fleet Map hero artwork over the drone photo (Figma 243:10588): Armada logo and the
+// Fleet Map screen on an iPad rising from the bottom edge. --k = 1 Figma px of the 1667 hero.
+import { Image } from 'astro:assets';
+import logo from '../../assets/case-studies/fleet-map/svg/armada-logo.svg';
+import ipad from '../../assets/case-studies/fleet-map/hero-ipad.png';
+---
+
+<img class="art art--logo" src={logo.src} alt="Armada" />
+<Image class="art art--ipad" src={ipad} alt="Fleet Map on an iPad: an asset panel, a map with a selected Starlink terminal, and the weather layers panel" widths={[628, 1006, 1256]} sizes="(max-width: 1023px) 62vw, 34vw" />
+
+<style>
+  .art {
+    position: absolute;
+    height: auto;
+    max-width: none;
+  }
+  .art--logo {
+    left: 50%;
+    top: calc(141 * var(--k));
+    width: calc(288.5 * var(--k));
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+  .art--ipad {
+    left: 50%;
+    top: calc(955 * var(--k));
+    width: calc(1006.6 * var(--k));
+    transform: translateX(-50%);
+    z-index: 3;
+  }
+</style>

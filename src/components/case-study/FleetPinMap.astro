@@ -1,0 +1,159 @@
+---
+// "The design problem" map (Figma 243:10610), animated: one Starlink pin on the map gets
+// selected — it lights up with its green focus ring, then the H3 hex around it fades in and the
+// asset tooltip appears. Holds, resets, repeats. Positions are Figma px of the 1040 × 361 frame.
+import { Image } from 'astro:assets';
+import base from '../../assets/case-studies/fleet-map/map-base.png';
+import hex from '../../assets/case-studies/fleet-map/svg/hex.svg';
+import pin from '../../assets/case-studies/fleet-map/svg/pin.svg';
+import pinFocus from '../../assets/case-studies/fleet-map/svg/pin-focus.svg';
+
+interface Props {
+  alt?: string;
+}
+const { alt = 'Fleet Map: an asset detail panel next to a map of North America dotted with asset pins' } = Astro.props;
+---
+
+<figure class="fpm" data-anim>
+  <Image class="fpm__base" src={base} alt={alt} widths={[1040, 1600, 2080]} sizes="(max-width: 1023px) 100vw, 56vw" />
+  <div class="fpm__layer" aria-hidden="true">
+    <img class="hex" src={hex.src} alt="" />
+    <img class="pin" src={pin.src} alt="" />
+    <img class="pin pin--focus" src={pinFocus.src} alt="" />
+    <div class="tip">
+      <span class="tip__id">KIT87654386</span>
+      <span class="tip__name">Atlanta Houston PVT</span>
+    </div>
+  </div>
+</figure>
+
+<script>
+  // Only animate while on screen
+  document.querySelectorAll<HTMLElement>('[data-anim]').forEach((el) => {
+    new IntersectionObserver(([e]) => el.classList.toggle('is-on', e.isIntersecting)).observe(el);
+  });
+</script>
+
+<style>
+  .fpm {
+    --k: calc(100cqw / 1040);
+    position: relative;
+    margin: 0;
+    aspect-ratio: 2080 / 723;
+    overflow: hidden;
+    container-type: inline-size;
+    background: #0b1d23;
+  }
+  .fpm__base {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .fpm__layer {
+    position: absolute;
+    inset: 0;
+  }
+  .fpm__layer > * {
+    position: absolute;
+    animation-duration: 6s;
+    animation-iteration-count: infinite;
+    animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+    animation-play-state: paused;
+  }
+  .fpm.is-on .fpm__layer > * {
+    animation-play-state: running;
+  }
+
+  .hex {
+    left: calc(506 * var(--k));
+    top: calc(119.3 * var(--k));
+    width: calc(98 * var(--k));
+    opacity: 0;
+    transform-origin: 50% 50%;
+    animation-name: hex;
+  }
+  .pin {
+    left: calc(531.56 * var(--k));
+    top: calc(146.74 * var(--k));
+    width: calc(47 * var(--k));
+    transform-origin: 50% 55%;
+  }
+  .pin--focus {
+    left: calc(528.2 * var(--k));
+    top: calc(143.38 * var(--k));
+    width: calc(53.7 * var(--k));
+    opacity: 0;
+    animation-name: focus;
+  }
+  .tip {
+    left: calc(499.7 * var(--k));
+    top: calc(195.8 * var(--k));
+    width: calc(112.4 * var(--k));
+    padding: calc(4 * var(--k)) calc(6 * var(--k));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: calc(0.84 * var(--k)) solid #545859;
+    border-radius: calc(6.3 * var(--k));
+    background: rgba(1, 20, 26, 0.82);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+    font-size: calc(9.6 * var(--k));
+    line-height: 1.2;
+    letter-spacing: 0;
+    white-space: nowrap;
+    opacity: 0;
+    transform-origin: 50% 0;
+    animation-name: tip;
+  }
+  /* little arrow pointing up at the pin */
+  .tip::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: calc(-4 * var(--k));
+    width: calc(7 * var(--k));
+    height: calc(7 * var(--k));
+    border-left: calc(0.84 * var(--k)) solid #545859;
+    border-top: calc(0.84 * var(--k)) solid #545859;
+    background: rgb(1, 20, 26);
+    transform: translateX(-50%) rotate(45deg);
+  }
+  .tip__id {
+    color: #fff;
+  }
+  .tip__name {
+    color: #acadad;
+  }
+
+  /* 0–15% idle · 15–25% pin selected · 25–42% hex grows in · 35–45% tooltip · hold · 82–94% reset */
+  @keyframes focus {
+    0%, 15% { opacity: 0; transform: scale(0.9); }
+    21% { opacity: 1; transform: scale(1.18); }
+    26%, 82% { opacity: 1; transform: scale(1); }
+    94%, 100% { opacity: 0; transform: scale(1); }
+  }
+  @keyframes hex {
+    0%, 24% { opacity: 0; transform: scale(0.55) rotate(-8deg); }
+    42%, 82% { opacity: 1; transform: none; }
+    94%, 100% { opacity: 0; transform: scale(0.92); }
+  }
+  @keyframes tip {
+    0%, 34% { opacity: 0; transform: translateY(calc(-6 * var(--k))) scale(0.92); }
+    44%, 82% { opacity: 1; transform: none; }
+    92%, 100% { opacity: 0; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fpm__layer > * {
+      animation: none;
+    }
+    .pin--focus,
+    .hex,
+    .tip {
+      opacity: 1;
+    }
+  }
+</style>

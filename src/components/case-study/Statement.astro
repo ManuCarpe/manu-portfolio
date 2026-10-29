@@ -1,5 +1,5 @@
 ---
-// The big closing statement (Barlow Bold 51 at 3008px), in the right column of a <Split>.
+// The big closing statement (Barlow Bold 51 at 3008px, uppercase), in the right column of a <Split>.
 ---
 
 <p class="statement"><slot /></p>
@@ -9,6 +9,7 @@
     color: var(--text);
     font-family: var(--sans);
     font-size: max(24px, calc(51 * var(--cu)));
+    text-transform: uppercase;
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.01em;

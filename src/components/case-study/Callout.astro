@@ -1,0 +1,18 @@
+---
+// A bold uppercase line inside a topic, set like a topic title (Barlow Bold 32 at 3008px).
+//   <Callout>Adoption confirmed the reframe.</Callout>
+---
+
+<p class="callout"><slot /></p>
+
+<style>
+  p.callout {
+    font-family: var(--sans);
+    font-size: max(19px, calc(32 * var(--cu)));
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+</style>
