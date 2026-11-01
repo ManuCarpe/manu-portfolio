@@ -65,6 +65,10 @@ const { active, solid = false, overlay = false } = Astro.props;
   .header > * {
     pointer-events: auto;
   }
+  /* the blur band reaches below the header — never let it catch clicks meant for the page */
+  .header > .pblur {
+    pointer-events: none;
+  }
   .overlay {
     position: fixed;
     inset: 0 0 auto;
