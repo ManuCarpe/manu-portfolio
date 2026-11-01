@@ -28,15 +28,15 @@ export const frames: Record<string, [number, number]> = {
   p16: [468.6, 491.4],
   p17: [468.6, 491.4],
   p18: [468.6, 491.4],
-  p21: [662.0, 672.0],
-  p22: [662.0, 672.0],
-  p19: [551.2, 328.3],
+  p21: [549.7, 558.0],
+  p22: [437.0, 410.9],
+  p19: [621.0, 369.9],
   p23: [831.9, 643.2],
   p24: [831.9, 444.3],
   p25: [831.9, 387.1],
-  p20: [693.2, 493.0],
+  p20: [905.4, 643.8],
   p26: [727.9, 563.7],
-  p27: [663.5, 402.5],
+  p27: [663.0, 392.0],
   p28: [408.1, 544.1],
   p29: [408.1, 544.1],
   p31: [408.1, 544.1],
@@ -58,7 +58,7 @@ export const frames: Record<string, [number, number]> = {
   p58: [326.1, 705.7],
   p59: [326.1, 705.7],
   p57: [326.1, 705.7],
-  p60: [326.1, 705.7],
+  p60: [326.1, 705.7], // Figma frame is now 326 × 1281 — re-export p60.png, then update
   p46: [1167.2, 656.6],
   p36: [961.7, 469.3],
   p35: [1167.2, 1404.9],
@@ -92,6 +92,18 @@ export const frames: Record<string, [number, number]> = {
   p65: [326.1, 1673.0],
   p70: [326.1, 705.7],
   p73: [326.1, 705.7],
+  p83: [1359.5, 1019.6],
+  p84: [1223.6, 1200.6],
+  p85: [1223.6, 797.0],
+  p86: [1160.7, 870.1],
+  p87: [1359.5, 1019.6],
+  p88: [1468.3, 949.1],
+  p89: [1468.3, 949.1],
+  p90: [1631.4, 917.7],
+  p91: [833.6, 1164.1],
+  p92: [1359.5, 1019.6],
+  p93: [1464.0, 2227.0],
+  p94: [1866.0, 1399.5],
 };
 
 export type Fx = 'reveal' | 'rise' | 'pop' | 'roll' | 'swapA' | 'swapB' | 'marquee';
@@ -109,7 +121,8 @@ export type Anim = {
 };
 
 export const ANIM: Record<string, Anim> = {
-  p13: { layers: [['a', 28.8, 146.6, 410.9, 398.5, 'reveal', 0]] },
+  // p13-a is exported at the frame's full width (its arcs run to the edges)
+  p13: { layers: [['a', 0, 146.6, 468.6, 553.5, 'reveal', 0]] },
   p14: {
     layers: [
       ['c1', 193.4, 61.3, 207.8, 59.5, 'rise', 0],
@@ -146,13 +159,9 @@ export const ANIM: Record<string, Anim> = {
       ['c4', 37.3, 267.9, 393.9, 101.7, 'roll', 0.75],
     ],
   },
-  p24: {
-    layers: [
-      ['v1', 349, 87.1, 407, 307.4, 'swapA', 0],
-      ['v2', 349, 87.1, 407, 307.4, 'swapB', 0],
-    ],
-  },
-  p27: { layers: [['strip', -214.4, 213, 1092.3, 71.7, 'marquee', 0]] },
+  // p27-strip is one loop of the logo strip: 16 items, 91px apart (cut just before the
+  // sectional sofa comes round again, so the two copies join without a seam)
+  p27: { layers: [['strip', -214.65, 201.9, 1456.3, 71.68, 'marquee', 0]] },
   p34: { glow: [[71.7, 195.1, 380.6, 105.8]] },
   p11: {
     pulses: [
@@ -175,10 +184,8 @@ export const ANIM: Record<string, Anim> = {
   p78: { rings: [167, 88, 352] },
   p81: { rings: [167, 88, 352] },
   p26: { scroll: [0, -470, 727.9, 3741] },
-  p33: { scroll: [-1.8, -684.5, 1170.9, 3802.5] },
-  p35: { scroll: [-14, -2045, 1948, 3450] },
-  p70: { scroll: [-2, -324, 392, 1897] },
-  p60: { scroll: [0, 0, 326.1, 1088.3] },
+  p33: { scroll: [0, 0, 1167.2, 3828.6] },
+  p35: { scroll: [0, 0, 1167.2, 3318.6] },
   p12: { sheen: true },
   p17: { sheen: true },
   p18: { sheen: true },
