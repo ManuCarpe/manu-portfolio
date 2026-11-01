@@ -41,7 +41,7 @@ if (!reduce) {
   document.documentElement.classList.add('motion');
 
   // ---------- Smooth scroll ----------
-  lenis = new Lenis({ lerp: 0.085, smoothWheel: true });
+  lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((t) => lenis!.raf(t * 1000));
   gsap.ticker.lagSmoothing(0);
@@ -93,20 +93,22 @@ if (!reduce) {
     rotation: (i: number) => (i - mid) * 4,
     scale: 0.82,
   };
-  const spread = gsap.fromTo(cards, stacked, {
-    x: 0,
-    rotation: 0,
-    scale: 1,
-    duration: SPREAD_SECONDS,
-    ease: 'power3.inOut',
-    stagger: { each: 0.06, from: 'center' },
-    paused: true,
-  });
+  const open = { x: 0, rotation: 0, scale: 1 };
+  // start stacked, before anything is seen
+  gsap.set(cards, stacked);
   let isSpread = false;
+  let spread: gsap.core.Tween | null = null;
   const setSpread = (on: boolean) => {
     if (on === isSpread) return;
     isSpread = on;
-    on ? spread.play() : spread.reverse();
+    spread?.kill();
+    spread = gsap.to(cards, {
+      ...(on ? open : stacked),
+      duration: SPREAD_SECONDS,
+      ease: 'power3.inOut',
+      stagger: { each: 0.06, from: on ? 'center' : 'edges' },
+      overwrite: true,
+    });
   };
   ScrollTrigger.create({
     trigger: intro,
@@ -114,10 +116,12 @@ if (!reduce) {
     end: 'max',
     onToggle: (self) => setSpread(self.isActive),
   });
-  ScrollTrigger.addEventListener('refreshInit', () => {
-    // recompute the stacked positions for the new screen size
-    const p = spread.progress();
-    spread.invalidate().progress(p);
+  ScrollTrigger.addEventListener('refresh', () => {
+    // the screen size changed: re-place the stack (an open row needs nothing)
+    if (!isSpread) {
+      spread?.kill();
+      gsap.set(cards, stacked);
+    }
   });
 
   // Keyboard: tabbing onto a card scrolls the page to where that card is in view
@@ -131,6 +135,31 @@ if (!reduce) {
     setSpread(true);
     lenis!.scrollTo(y, { immediate: true, force: true });
   });
+
+  // ---------- First load: letters rise, the portrait settles, the menu drops in ----------
+  // (index.astro holds them back with html.intro-wait until the portrait and fonts are ready.
+  //  GSAP does this rather than CSS transitions: pinning moves the hero in the DOM, which
+  //  would cut a CSS transition short.)
+  const root = document.documentElement;
+  if (root.classList.contains('intro-wait')) {
+    const chars = gsap.utils.toArray<HTMLElement>('.ch', intro);
+    const portrait = intro.querySelector<HTMLElement>('.hero__photo');
+    const enter = () => {
+      if (!root.classList.contains('intro-wait')) return;
+      gsap.set(chars, { y: (_i: number, el: HTMLElement) => parseFloat(getComputedStyle(el).fontSize) * 1.45 });
+      if (portrait) gsap.set(portrait, { scale: 1.15 });
+      root.classList.remove('intro-wait'); // the header has its own CSS fade (Header.astro)
+      gsap.to(chars, {
+        y: 0,
+        duration: 1.1,
+        ease: 'power4.out',
+        delay: (_i: number, el: HTMLElement) => parseFloat(el.style.getPropertyValue('--d')) || 0,
+      });
+      if (portrait) gsap.to(portrait, { scale: 1, duration: 2, ease: 'power3.out', clearProps: 'transform' });
+    };
+    if ((window as any).__introReady) enter();
+    else document.addEventListener('intro:go', enter, { once: true });
+  }
 
   // ---------- Playground → connect ----------
   const sheet = play.querySelector<HTMLElement>('[data-sheet]')!;

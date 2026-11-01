@@ -11,6 +11,7 @@
 // switched on, the same content simply stacks.
 import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
+import RiseText from '../components/RiseText.astro';
 import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import PlayCanvas from '../components/PlayCanvas.astro';
@@ -24,6 +25,34 @@ const [firstWord, ...rest] = site.role.split(' ');
 ---
 
 <Base>
+  <!-- First load: hold the portrait, the hero words and the menu back until the portrait and
+       fonts are ready, then let them in (see the intro-wait rules). Runs before anything paints. -->
+  <script is:inline>
+    (function () {
+      var d = document.documentElement;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      d.classList.add('motion', 'intro-wait');
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        // the home page script plays the entrance; if it isn't there, just show everything
+        window.__introReady = true;
+        document.dispatchEvent(new Event('intro:go'));
+        setTimeout(function () { d.classList.remove('intro-wait'); }, 500);
+      }
+      setTimeout(go, 1800);
+      addEventListener('DOMContentLoaded', function () {
+        var img = document.querySelector('.hero__photo');
+        Promise.all([
+          document.fonts ? document.fonts.ready : null,
+          img && !img.complete
+            ? new Promise(function (r) { img.addEventListener('load', r); img.addEventListener('error', r); })
+            : null,
+        ]).then(go);
+      });
+    })();
+  </script>
   <Header active="home" overlay />
 
   <main class="home" data-home>
@@ -48,11 +77,11 @@ const [firstWord, ...rest] = site.role.split(' ');
         <!-- Sits on the layer's top edge, so the layer pushes it up -->
         <div class="hero__text display" data-hero-text>
           <h1 class="role">
-            <span>{firstWord}</span>
-            <span>{rest.join(' ')}</span>
+            <span><RiseText text={firstWord} start={0.05} /></span>
+            <span><RiseText text={rest.join(' ')} start={0.17} /></span>
           </h1>
-          <p class="name">{site.name}</p>
-          <p class="years">{site.experience}</p>
+          <p class="name"><RiseText text={site.name} start={0.32} step={0.025} /></p>
+          <p class="years"><RiseText text={site.experience} start={0.45} step={0.025} /></p>
         </div>
 
         <div class="cases" id="case-study">
@@ -69,11 +98,11 @@ const [firstWord, ...rest] = site.role.split(' ');
                     sizes="(max-width: 767px) 80vw, 35vw"
                     loading={i < 3 ? 'eager' : 'lazy'}
                   />
-                  <span class="card__fade" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span class="card__fade" aria-hidden="true"><i></i><i></i></span>
                   <h3 class="card__title display">{s.data.title}</h3>
                   <span class="card__meta">
                     <span class="card__num">[ {String(i + 1).padStart(2, '0')} ]</span>
-                    <span class="card__summary">{s.data.summary}</span>
+                    <span class="card__summary">{s.data.summary.split('\n').map((line, j) => (j === 0 ? line : <Fragment> <br class="card__br" />{line}</Fragment>))}</span>
                   </span>
                 </a>
               </li>
@@ -137,6 +166,11 @@ const [firstWord, ...rest] = site.role.split(' ');
     height: 100%;
     width: auto;
     max-width: none;
+    transform-origin: 50% 40%;
+  }
+  /* first load: starts zoomed in; the home page script settles it to its size */
+  :global(html.intro-wait) .hero__photo {
+    transform: scale(1.15);
   }
 
   /* Darkens the home screen as the layer pushes up over it (driven by the scroll) */
@@ -278,9 +312,8 @@ const [firstWord, ...rest] = site.role.split(' ');
     -webkit-mask-image: linear-gradient(to bottom, transparent var(--from), #000 100%);
     mask-image: linear-gradient(to bottom, transparent var(--from), #000 100%);
   }
-  .card__fade i:nth-child(1) { --b: 4px; --from: 0%; }
-  .card__fade i:nth-child(2) { --b: 12px; --from: 30%; }
-  .card__fade i:nth-child(3) { --b: 30px; --from: 60%; }
+  .card__fade i:nth-child(1) { --b: 6px; --from: 0%; }
+  .card__fade i:nth-child(2) { --b: 24px; --from: 45%; }
   .card__meta {
     position: absolute;
     left: max(14px, calc(32 * var(--u)));
@@ -428,6 +461,13 @@ const [firstWord, ...rest] = site.role.split(' ');
     .sheet,
     .sheet__body {
       grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* the summaries break where the content says, on wider screens only */
+  @media (max-width: 767px) {
+    .card__br {
+      display: none;
     }
   }
 </style>
