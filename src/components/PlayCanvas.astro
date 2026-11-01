@@ -1,10 +1,11 @@
 ---
-// The Playground: an endless canvas of work. Drag (or swipe) to move around; it keeps
-// gliding after you let go, with a motion blur that follows the speed. The edges of the
-// screen are softly blurred. Pieces and their animations come from src/data/playground.ts.
+// The Playground: one board holding every piece once (no repeats). Drag (or swipe) to move
+// around; it keeps gliding after you let go, with a motion blur that follows the speed, and
+// eases back when you pull past an edge. The edges of the screen are softly blurred.
+// Pieces and their animations come from src/data/playground.ts.
 //
-// The server renders one tile (three columns); the script clones it as many times as
-// needed to fill the screen and wraps it around as you move.
+// The server renders the pieces in order; the script arranges them into as many columns as
+// suit the screen (shortest column first) and keeps the board inside the screen.
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { ANIM, frames, tile } from '../data/playground';
@@ -12,42 +13,40 @@ import { ANIM, frames, tile } from '../data/playground';
 const files = import.meta.glob<{ default: ImageMetadata }>('../assets/playground-v4/*.png', { eager: true });
 const img = (k: string) => files[`../assets/playground-v4/${k}.png`]?.default;
 
-// Lay the frames out into three columns, each piece going to the shortest column
-type Piece = { k: string; y: number; h: number; W: number; H: number };
-const cols: { x: number; pieces: Piece[]; end: number }[] = Array.from({ length: tile.cols }, (_, i) => ({
-  x: i * tile.colGap,
-  pieces: [],
-  end: 0,
-}));
+// Every frame once, in order (frames without an export yet are skipped)
+type Piece = { k: string; h: number; W: number; H: number };
+const pieces: Piece[] = [];
 for (const k of Object.keys(frames).sort()) {
   const a = ANIM[k];
   if (!img(k) && !(a?.scroll && img(`${k}-long`))) continue;
   const [W, H] = frames[k];
-  const h = Math.round((tile.card * H) / W);
-  const c = cols.reduce((m, c) => (c.end < m.end ? c : m));
-  c.pieces.push({ k, y: c.end, h, W, H });
-  c.end += h + tile.gap;
+  pieces.push({ k, h: Math.round((tile.card * H) / W), W, H });
 }
-const tileW = tile.cols * tile.colGap + 1;
+// A starting arrangement (used without JavaScript); the script re-arranges for the screen
+const START_COLS = 12;
+const ends = Array(START_COLS).fill(0);
+const at = pieces.map((p) => {
+  const i = ends.indexOf(Math.min(...ends));
+  const pos = { x: i * tile.colGap, y: ends[i] };
+  ends[i] += p.h + tile.gap;
+  return pos;
+});
 // Position helpers: Figma px inside a frame → % of the card
 const box = (r: number[], W: number, H: number) =>
   `left:${(r[0] / W) * 100}%;top:${(r[1] / H) * 100}%;width:${(r[2] / W) * 100}%;height:${(r[3] / H) * 100}%`;
 const px = (r: number[], W: number) => Math.min(1600, Math.round((r[2] / W) * 654));
 let n = 0;
 ---
-<div class="canvas" data-canvas data-tile-w={tileW} aria-label="Playground — drag to explore" role="region">
+<div class="canvas" data-canvas data-card={tile.card} data-gap={tile.gap} data-col-gap={tile.colGap} aria-label="Playground — drag to explore" role="region">
   <div class="canvas__world" data-world>
-    <template data-tile>
-      {cols.map((c) => (
-        <div class="col" data-col style={`left:${c.x}px`} data-period={c.end}>
-          <div class="col__run" data-run>
-            {c.pieces.map(({ k, y, h, W, H }) => {
+            {pieces.map(({ k, h, W, H }, idx) => {
+              const y = at[idx].y;
               const a = ANIM[k] ?? {};
               const base = img(k);
               const long = a.scroll && img(`${k}-long`);
               const s = a.scroll;
               return (
-                <div class:list={['piece', a && Object.keys(a).length && 'piece--anim']} data-anim style={`top:${y}px;height:${h}px;--i:${n++ % 7}`}>
+                <div class:list={['piece', a && Object.keys(a).length && 'piece--anim']} data-piece data-h={h} style={`left:${at[idx].x}px;top:${y}px;height:${h}px;--i:${n++ % 7}`}>
                   {long && s ? (
                     <Image class="lyr scroll" src={long} alt="" width={px(s, W)} loading="lazy" decoding="async" draggable="false"
                       style={`${box(s, W, H)};top:0;--sy:${-(1 - H / s[3]) * 100}%`} />
@@ -82,10 +81,6 @@ let n = 0;
                 </div>
               );
             })}
-          </div>
-        </div>
-      ))}
-    </template>
   </div>
 
   <!-- Soft, progressively blurred edges -->
@@ -125,12 +120,6 @@ let n = 0;
   }
   .canvas__world :global(.col) {
     position: absolute;
-    top: 0;
-    width: 218px;
-  }
-  .canvas__world :global(.col__run) {
-    position: absolute;
-    left: 0;
     top: 0;
     width: 218px;
   }
@@ -367,59 +356,88 @@ let n = 0;
 </style>
 
 <script>
-  // Endless, draggable canvas with momentum and speed-based motion blur.
+  // A finite, draggable board with momentum, speed-based motion blur and soft edges.
+  type Col = { el: HTMLElement; x: number };
   type Canvas = {
     el: HTMLElement;
     world: HTMLElement;
-    /** canvas offset in Figma px */
+    /** board offset in Figma px (x, and y before the page-scroll drift) */
     x: number;
     y: number;
-    /** extra vertical offset driven by page scroll (set from the home page script) */
+    /** vertical drift driven by page scroll (set from the home page script) */
     scrollY: number;
     /** 0 → 1 while the playground slides into view (pieces rise into place) */
     enter: number;
     vx: number;
     vy: number;
     scale: number;
-    cols: { run: HTMLElement; period: number; k: number }[];
-    tileW: number;
+    cols: Col[];
+    /** board size in Figma px */
+    w: number;
+    h: number;
+    placed: boolean;
   };
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
   function build(el: HTMLElement): Canvas {
     const world = el.querySelector<HTMLElement>('[data-world]')!;
-    const tpl = el.querySelector<HTMLTemplateElement>('[data-tile]')!;
-    const tileW = Number(el.dataset.tileW);
-    const c: Canvas = { el, world, x: -207.5, y: -280, scrollY: 0, enter: 1, vx: 0, vy: 0, scale: 1, cols: [], tileW };
+    const pieces = [...world.querySelectorAll<HTMLElement>('[data-piece]')];
+    const card = Number(el.dataset.card);
+    const gap = Number(el.dataset.gap);
+    const colGap = Number(el.dataset.colGap);
+    const stack = pieces.reduce((s, p) => s + Number(p.dataset.h) + gap, 0);
+    const c: Canvas = { el, world, x: 0, y: 0, scrollY: 0, enter: 1, vx: 0, vy: 0, scale: 1, cols: [], w: 0, h: 0, placed: false };
 
     const layout = () => {
       const w = el.clientWidth;
       const h = el.clientHeight;
+      const touch = w < 1024;
       // Desktop follows the 3008px Figma frame but never gets tiny; phones get a fixed scale
-      c.scale = w >= 1024 ? Math.max(w / 3008, 0.55) : 0.5;
+      c.scale = touch ? 0.5 : Math.max(w / 3008, 0.55);
+      const viewW = w / c.scale;
+      const viewH = h / c.scale;
+      // Columns: on desktop the board takes the screen's shape (about 2 screens each way);
+      // on phones you only swipe sideways, so the board is wide and about as tall as the
+      // screen plus what the page scroll drifts it by.
+      const n = touch
+        ? Math.ceil(stack / (viewH + h * 1.1))
+        : Math.round(Math.sqrt(((viewW / viewH) * stack) / colGap));
+      const count = clamp(n, 3, pieces.length);
+
+      // Keep the same spot in view across re-layouts
+      const fx = c.placed ? (viewW / 2 - c.x) / Math.max(1, c.w) : 0.5;
+      const fy = c.placed ? (viewH / 2 - (c.y - c.scrollY)) / Math.max(1, c.h) : 0;
+
       world.replaceChildren();
-      c.cols = [];
-      const tilesX = Math.ceil(w / c.scale / tileW) + 1;
-      for (let t = 0; t < tilesX; t++) {
-        const frag = tpl.content.cloneNode(true) as DocumentFragment;
-        frag.querySelectorAll<HTMLElement>('[data-col]').forEach((col) => {
-          col.style.left = `${parseFloat(col.style.left) + t * tileW}px`;
-          const run = col.querySelector<HTMLElement>('[data-run]')!;
-          const period = Number(col.dataset.period);
-          // Repeat the column's pieces so it always covers the screen height
-          const reps = Math.ceil(h / c.scale / period) + 1;
-          const first = [...run.children];
-          for (let r = 1; r < reps; r++) {
-            first.forEach((p) => {
-              const copy = p.cloneNode(true) as HTMLElement;
-              copy.style.top = `${parseFloat((p as HTMLElement).style.top) + r * period}px`;
-              run.append(copy);
-            });
-          }
-          c.cols.push({ run, period, k: c.cols.length % 3 });
-        });
-        world.append(frag);
+      c.cols = Array.from({ length: count }, (_, i) => {
+        const col = document.createElement('div');
+        col.className = 'col';
+        col.style.left = `${i * colGap}px`;
+        world.append(col);
+        return { el: col, x: i * colGap };
+      });
+      const ends = Array(count).fill(0);
+      pieces.forEach((p) => {
+        const i = ends.indexOf(Math.min(...ends));
+        p.style.left = '0';
+        p.style.top = `${ends[i]}px`;
+        c.cols[i].el.append(p);
+        ends[i] += Number(p.dataset.h) + gap;
+      });
+      c.w = (count - 1) * colGap + card;
+      c.h = Math.max(...ends) - gap;
+
+      const b = bounds(c);
+      if (!c.placed) {
+        // start centred sideways, at the top (the page scroll drifts it down from there)
+        c.x = clamp((viewW - c.w) / 2, b.minX, b.maxX);
+        c.y = b.maxY + c.scrollY;
+        c.placed = true;
+      } else {
+        c.x = clamp(viewW / 2 - fx * c.w, b.minX, b.maxX);
+        c.y = clamp(viewH / 2 - fy * c.h, b.minY, b.maxY) + c.scrollY;
       }
       render(c);
       watch(world);
@@ -433,6 +451,25 @@ let n = 0;
     return c;
   }
 
+  /** How far the board may move (Figma px): it can't leave the screen, with a margin so the
+      outer pieces clear the blurred edges and the header. */
+  function bounds(c: Canvas) {
+    const w = c.el.clientWidth;
+    const h = c.el.clientHeight;
+    const viewW = w / c.scale;
+    const viewH = h / c.scale;
+    const side = Math.min(w * 0.08, 140) / c.scale;
+    const top = Math.max(110, h * 0.14) / c.scale;
+    const bottom = Math.min(h * 0.12, 140) / c.scale;
+    let minX = viewW - side - c.w;
+    let maxX = side;
+    if (minX > maxX) minX = maxX = (viewW - c.w) / 2;
+    let minY = viewH - bottom - c.h;
+    const maxY = top;
+    if (minY > maxY) minY = maxY;
+    return { minX, maxX, minY, maxY };
+  }
+
   // Animated pieces only play while they're on screen
   const io = 'IntersectionObserver' in window
     ? new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle('on', e.isIntersecting)))
@@ -441,19 +478,22 @@ let n = 0;
     io?.disconnect();
     world.querySelectorAll('.piece--anim').forEach((p) => (io ? io.observe(p) : p.classList.add('on')));
   }
-  const wrap = (v: number, p: number) => ((v % p) + p) % p - p;
 
   function render(c: Canvas, blur = 0) {
     const y = c.y - c.scrollY;
-    c.world.style.transform = `scale(${c.scale}) translate3d(${wrap(c.x, c.tileW)}px,0,0)`;
+    c.world.style.transform = `scale(${c.scale}) translate3d(${c.x}px,${y}px,0)`;
     // While entering, the columns are hidden; then each one fades in and rises into place,
-    // staggered left → right
-    const progress = (k: number) => (c.enter >= 1 ? 1 : Math.min(1, Math.max(0, c.enter * 1.6 - k * 0.25)));
-    c.cols.forEach(({ run, period, k }) => {
-      const t = progress(k);
+    // staggered left → right across the screen
+    const w = c.el.clientWidth || 1;
+    c.cols.forEach(({ el, x }) => {
+      let t = 1;
+      if (c.enter < 1) {
+        const sx = clamp(((x + c.x) * c.scale) / w, 0, 1);
+        t = clamp(c.enter * 1.6 - sx * 0.6, 0, 1);
+      }
       const lift = Math.pow(1 - t, 3) * (c.el.clientHeight / c.scale) * 0.4;
-      run.style.transform = `translate3d(0,${wrap(y, period) + lift}px,0)`;
-      run.style.opacity = t >= 1 ? '' : String(Math.min(1, t * 1.4).toFixed(3));
+      el.style.transform = lift ? `translate3d(0,${lift}px,0)` : '';
+      el.style.opacity = t >= 1 ? '' : Math.min(1, t * 1.4).toFixed(3);
     });
     c.world.style.filter = blur > 0.3 ? `blur(${blur.toFixed(1)}px)` : '';
   }
@@ -469,16 +509,35 @@ let n = 0;
     let raf = 0;
 
     const tick = () => {
+      let settling = false;
       if (!dragging) {
-        // Momentum: keep gliding and slow down
+        // Momentum: keep gliding and slow down…
         c.x += c.vx;
         c.y += c.vy;
         c.vx *= 0.94;
         c.vy *= 0.94;
+        // …and ease back inside if it went past an edge
+        const b = bounds(c);
+        const y = c.y - c.scrollY;
+        const tx = clamp(c.x, b.minX, b.maxX);
+        const ty = clamp(y, b.minY, b.maxY);
+        if (tx !== c.x) {
+          c.vx *= 0.5;
+          c.x += (tx - c.x) * 0.16;
+          settling ||= Math.abs(tx - c.x) > 0.3;
+          if (!settling) c.x = tx;
+        }
+        if (ty !== y) {
+          c.vy *= 0.5;
+          c.y += (ty - y) * 0.16;
+          const left = Math.abs(ty - (c.y - c.scrollY));
+          if (left > 0.3) settling = true;
+          else c.y = ty + c.scrollY;
+        }
       }
       const speed = Math.hypot(c.vx, c.vy) * c.scale;
       render(c, reduce ? 0 : Math.min(10, speed * 0.6));
-      if (dragging || Math.abs(c.vx) > 0.05 || Math.abs(c.vy) > 0.05) raf = requestAnimationFrame(tick);
+      if (dragging || settling || Math.abs(c.vx) > 0.05 || Math.abs(c.vy) > 0.05) raf = requestAnimationFrame(tick);
       else {
         raf = 0;
         render(c);
@@ -496,7 +555,7 @@ let n = 0;
       lastT = performance.now();
       c.vx = c.vy = 0;
       el.classList.add('is-dragging', 'was-dragged');
-      // Touch: only horizontal swipes move the canvas, so vertical swipes still scroll the page
+      // Touch: only horizontal swipes move the board, so vertical swipes still scroll the page
       if (e.pointerType === 'mouse') el.setPointerCapture(e.pointerId);
       kick();
     });
@@ -504,8 +563,13 @@ let n = 0;
       if (!dragging) return;
       const now = performance.now();
       const dt = Math.max(1, now - lastT);
-      const dx = (e.clientX - lastX) / c.scale;
-      const dy = e.pointerType === 'mouse' ? (e.clientY - lastY) / c.scale : 0;
+      let dx = (e.clientX - lastX) / c.scale;
+      let dy = e.pointerType === 'mouse' ? (e.clientY - lastY) / c.scale : 0;
+      // Past an edge the board follows the pointer reluctantly (rubber band)
+      const b = bounds(c);
+      const y = c.y - c.scrollY;
+      if ((c.x > b.maxX && dx > 0) || (c.x < b.minX && dx < 0)) dx *= 0.35;
+      if ((y > b.maxY && dy > 0) || (y < b.minY && dy < 0)) dy *= 0.35;
       c.x += dx;
       c.y += dy;
       // velocity in Figma px per frame (~16ms)
@@ -526,15 +590,19 @@ let n = 0;
     el.addEventListener('pointercancel', end);
     el.addEventListener('lostpointercapture', end);
 
-    // Let the page script move the canvas with scroll
-    // …and to bring the pieces in from the bottom as the playground arrives
+    // The page script brings the pieces in from the bottom as the playground arrives…
     el.addEventListener('canvas:enter', ((e: CustomEvent<number>) => {
       c.enter = e.detail;
       el.style.setProperty('--fade', `${((1 - e.detail) * 30).toFixed(2)}vh`);
       if (!raf) render(c);
     }) as EventListener);
+    // …and drifts the board with the page scroll (it stops at the board's bottom edge)
     el.addEventListener('canvas:scroll', ((e: CustomEvent<number>) => {
       c.scrollY = e.detail;
+      if (!dragging) {
+        const b = bounds(c);
+        c.y = clamp(c.y - c.scrollY, b.minY, b.maxY) + c.scrollY;
+      }
       if (!raf) render(c);
     }) as EventListener);
   });
