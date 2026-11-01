@@ -181,6 +181,10 @@ if (!reduce) {
 
   // the canvas drifts with the scroll, from the moment it comes into view
   if (canvas) {
+    // the page stays put while a playground piece is open large
+    canvas.addEventListener('canvas:focus', ((e: CustomEvent<boolean>) => {
+      e.detail ? lenis!.stop() : lenis!.start();
+    }) as EventListener);
     ScrollTrigger.create({
       trigger: play,
       start: 'top bottom',

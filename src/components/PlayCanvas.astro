@@ -2,7 +2,9 @@
 // The Playground: one board holding every piece once (no repeats). Drag (or swipe) to move
 // around; it keeps gliding after you let go, with a motion blur that follows the speed, and
 // eases back when you pull past an edge. The edges of the screen are softly blurred.
-// Pieces and their animations come from src/data/playground.ts.
+// Click a piece to view it large: it moves to the middle (about 80% of the screen) and the
+// others move out of its way; click another piece to swap, or × / Esc / the background to
+// put everything back. Pieces and their animations come from src/data/playground.ts.
 //
 // The server renders the pieces in order; the script arranges them into as many columns as
 // suit the screen (shortest column first) and keeps the board inside the screen.
@@ -51,7 +53,7 @@ let n = 0;
                     <Image class="lyr scroll" src={long} alt="" width={px(s, W)} loading="lazy" decoding="async" draggable="false"
                       style={`${box(s, W, H)};top:0;--sy:${-(1 - H / s[3]) * 100}%`} />
                   ) : base && (
-                    <Image class="piece__img" src={base} alt="" widths={[240, 480, 654]}
+                    <Image class="piece__img" src={base} alt="" widths={[240, 480, 654, 1200, 1800].filter((w) => w <= base.width)}
                       sizes="(max-width: 1023px) 110px, (max-width: 2200px) 132px, 220px" loading="lazy" decoding="async" draggable="false" />
                   )}
                   {a.layers?.map(([key, ...r]) => {
@@ -88,7 +90,11 @@ let n = 0;
   <div class="edge edge--r" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="edge edge--b" aria-hidden="true"><i></i><i></i><i></i></div>
 
-  <p class="hint" aria-hidden="true">Drag to explore</p>
+  <button class="close" type="button" data-close aria-label="Close the large view" tabindex="-1">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+  </button>
+
+  <p class="hint" aria-hidden="true">Drag to explore · click to view</p>
 </div>
 
 <style>
@@ -125,10 +131,15 @@ let n = 0;
   }
   .canvas__world :global(.piece) {
     position: absolute;
+    transform-origin: 0 0;
+    /* opening / closing the large view (the board itself moves by its own transform) */
+    transition:
+      transform 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.5s ease;
+    cursor: zoom-in;
     left: 0;
     width: 218px;
     overflow: hidden;
-    pointer-events: none;
     contain: layout paint;
   }
   .canvas__world :global(.piece img) {
@@ -296,11 +307,78 @@ let n = 0;
     }
   }
 
+  /* ---------- Large view ---------- */
+  .canvas.is-dragging :global(.piece) {
+    cursor: grabbing;
+  }
+  .canvas.is-focus {
+    cursor: zoom-out;
+    touch-action: none;
+  }
+  .canvas.is-focus .canvas__world :global(.piece) {
+    opacity: 0.45;
+  }
+  .canvas.is-focus .canvas__world :global(.piece:hover) {
+    opacity: 0.85;
+  }
+  .canvas__world :global(.col.has-focus) {
+    z-index: 5;
+  }
+  .canvas.is-focus .canvas__world :global(.piece.is-focused) {
+    opacity: 1;
+    cursor: default;
+  }
+  .close {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--header-h, 100px) + 4px);
+    z-index: 6;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-left: -22px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    color: #000;
+    box-shadow: 0 4px 18px rgb(0 0 0 / 0.12);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.9);
+    pointer-events: none;
+    transition:
+      opacity 0.35s ease,
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .close svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .canvas.is-focus .close {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .close:focus-visible {
+    outline: 2px solid #000;
+    outline-offset: 3px;
+  }
+  .canvas.is-focus .edge,
+  .canvas.is-focus .hint {
+    opacity: 0;
+  }
+
   /* ---------- Blurred edges (progressive: 3 layers each) ---------- */
   .edge {
     position: absolute;
     pointer-events: none;
     z-index: 2;
+    transition: opacity 0.5s ease;
   }
   .edge i {
     position: absolute;
@@ -391,6 +469,7 @@ let n = 0;
     const c: Canvas = { el, world, x: 0, y: 0, scrollY: 0, enter: 1, vx: 0, vy: 0, scale: 1, cols: [], w: 0, h: 0, placed: false };
 
     const layout = () => {
+      el.dispatchEvent(new Event('canvas:relayout'));
       const w = el.clientWidth;
       const h = el.clientHeight;
       const touch = w < 1024;
@@ -414,6 +493,7 @@ let n = 0;
       c.cols = Array.from({ length: count }, (_, i) => {
         const col = document.createElement('div');
         col.className = 'col';
+        col.dataset.x = String(i * colGap);
         col.style.left = `${i * colGap}px`;
         world.append(col);
         return { el: col, x: i * colGap };
@@ -547,8 +627,135 @@ let n = 0;
       if (!raf) raf = requestAnimationFrame(tick);
     };
 
+    // ---------- Large view ----------
+    const cardW = Number(el.dataset.card);
+    let focused: HTMLElement | null = null;
+    let focusScroll = 0;
+    const others = () => [...el.querySelectorAll<HTMLElement>('[data-piece]')];
+    /** A piece's place on screen (px, relative to the canvas) without any large-view offset */
+    const home = (p: HTMLElement) => {
+      const colX = Number(p.parentElement!.dataset.x);
+      return {
+        x: (colX + c.x) * c.scale,
+        y: (parseFloat(p.style.top) + c.y - c.scrollY) * c.scale,
+        w: cardW * c.scale,
+        h: Number(p.dataset.h) * c.scale,
+      };
+    };
+
+    const open = (p: HTMLElement) => {
+      const W = el.clientWidth;
+      const H = el.clientHeight;
+      const headerH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 100;
+      const top = headerH + 60; // room for the × button
+      const bottom = Math.max(24, H * 0.05);
+      // Fit inside ~80% of the screen (long pieces fit by height)
+      const r = home(p);
+      const maxW = W * (W < 1024 ? 0.9 : 0.8);
+      const maxH = Math.min(H * 0.8, H - top - bottom);
+      let tw = maxW;
+      let th = (tw * r.h) / r.w;
+      if (th > maxH) {
+        th = maxH;
+        tw = (th * r.w) / r.h;
+      }
+      const tx = (W - tw) / 2;
+      const ty = top + (H - top - bottom - th) / 2;
+
+      if (focused && focused !== p) {
+        focused.classList.remove('is-focused');
+        focused.parentElement!.classList.remove('has-focus');
+      }
+      focused = p;
+      focusScroll = c.scrollY;
+      p.classList.add('is-focused');
+      p.parentElement!.classList.add('has-focus');
+      p.style.transform = `translate3d(${(tx - r.x) / c.scale}px,${(ty - r.y) / c.scale}px,0) scale(${tw / r.w})`;
+      // a sharper image for the large size
+      p.querySelectorAll<HTMLImageElement>('.piece__img').forEach((img) => (img.sizes = `${Math.round(tw)}px`));
+
+      // Everything else moves straight out from the middle until it clears the large piece;
+      // pieces close by are nudged too, so the neighbourhood opens up rather than piling up.
+      const m = Math.min(W, H) * 0.035;
+      const T = { l: tx - m, t: ty - m, r: tx + tw + m, b: ty + th + m };
+      const cx = tx + tw / 2;
+      const cy = ty + th / 2;
+      const reach = Math.min(W, H);
+      others().forEach((q) => {
+        if (q === p) return;
+        const R = home(q);
+        let dx = R.x + R.w / 2 - cx;
+        let dy = R.y + R.h / 2 - cy;
+        const len = Math.hypot(dx, dy) || 1;
+        dx /= len;
+        dy /= len;
+        const overlaps = R.x < T.r && R.x + R.w > T.l && R.y < T.b && R.y + R.h > T.t;
+        let need = 0;
+        if (overlaps) {
+          const ts: number[] = [];
+          if (dx > 0.001) ts.push((T.r - R.x) / dx);
+          if (dx < -0.001) ts.push((T.l - (R.x + R.w)) / dx);
+          if (dy > 0.001) ts.push((T.b - R.y) / dy);
+          if (dy < -0.001) ts.push((T.t - (R.y + R.h)) / dy);
+          need = Math.min(...ts.filter((t) => t > 0));
+        }
+        // distance from the piece to the large piece's area
+        const gx = Math.max(T.l - (R.x + R.w), 0, R.x - T.r);
+        const gy = Math.max(T.t - (R.y + R.h), 0, R.y - T.b);
+        const nudge = reach * 0.28 * Math.exp(-Math.hypot(gx, gy) / (reach * 0.35));
+        const push = Math.max(need, nudge);
+        q.style.transform = push > 0.5 ? `translate3d(${(dx * push) / c.scale}px,${(dy * push) / c.scale}px,0)` : '';
+      });
+
+      if (!el.classList.contains('is-focus')) {
+        el.classList.add('is-focus');
+        el.dispatchEvent(new CustomEvent('canvas:focus', { detail: true, bubbles: true }));
+      }
+    };
+
+    const close = () => {
+      if (!focused) return;
+      focused.classList.remove('is-focused');
+      const col = focused.parentElement!;
+      // keep it above the others until it has flown back
+      window.setTimeout(() => col.classList.remove('has-focus'), 750);
+      focused = null;
+      others().forEach((q) => (q.style.transform = ''));
+      el.classList.remove('is-focus');
+      el.dispatchEvent(new CustomEvent('canvas:focus', { detail: false, bubbles: true }));
+    };
+
+    el.querySelector('[data-close]')!.addEventListener('click', (e) => {
+      e.stopPropagation();
+      close();
+    });
+    el.querySelector('[data-close]')!.addEventListener('pointerdown', (e) => e.stopPropagation());
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && focused) close();
+    });
+    el.addEventListener('canvas:relayout', () => close());
+
+    // A click is a press that barely moved
+    let downX = 0;
+    let downY = 0;
+    let downT = 0;
+    let downPiece: HTMLElement | null = null;
     el.addEventListener('pointerdown', (e) => {
-      if (e.button !== 0) return;
+      // remember what was pressed (pointer capture makes the click land on the canvas itself)
+      downPiece = (e.target as HTMLElement).closest<HTMLElement>('[data-piece]');
+      downX = e.clientX;
+      downY = e.clientY;
+      downT = performance.now();
+    }, true);
+    el.addEventListener('click', (e) => {
+      if (Math.hypot(e.clientX - downX, e.clientY - downY) > 6 || performance.now() - downT > 600) return;
+      const p = downPiece;
+      if (p && p !== focused) open(p);
+      else if (!p && focused) close();
+    });
+
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || focused) return;
       dragging = true;
       lastX = e.clientX;
       lastY = e.clientY;
@@ -579,6 +786,10 @@ let n = 0;
       lastY = e.clientY;
       lastT = now;
     });
+    // a click shouldn't fling the board
+    el.addEventListener('pointerup', (e) => {
+      if (Math.hypot(e.clientX - downX, e.clientY - downY) <= 6) c.vx = c.vy = 0;
+    }, true);
     const end = () => {
       if (!dragging) return;
       dragging = false;
@@ -599,6 +810,8 @@ let n = 0;
     // …and drifts the board with the page scroll (it stops at the board's bottom edge)
     el.addEventListener('canvas:scroll', ((e: CustomEvent<number>) => {
       c.scrollY = e.detail;
+      // the page moved on (e.g. a menu jump): put the large view away
+      if (focused && Math.abs(c.scrollY - focusScroll) > 4) close();
       if (!dragging) {
         const b = bounds(c);
         c.y = clamp(c.y - c.scrollY, b.minY, b.maxY) + c.scrollY;
