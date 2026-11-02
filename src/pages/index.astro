@@ -123,8 +123,18 @@ const [firstWord, ...rest] = site.role.split(' ');
         <div class="sheet__body">
           <a class="sheet__email display" href={`mailto:${site.email}`}>{site.email}</a>
           <ul class="sheet__links">
-            {site.linkedin && <li><span>LinkedIn</span><a href={site.linkedin} target="_blank" rel="noopener">{site.linkedin.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a></li>}
-            <li><span>Based in</span><span>{site.location}</span></li>
+            {site.social.length > 0 && (
+              <li>
+                <span>Social</span>
+                <span class="sheet__row">
+                  {site.social.map((s) => <a href={s.href} target="_blank" rel="noopener">{s.label}</a>)}
+                </span>
+              </li>
+            )}
+            <li>
+              <span>Based in</span>
+              <span class="sheet__row">{site.locations.map((l) => <span>{l}</span>)}</span>
+            </li>
           </ul>
         </div>
         <p class="sheet__foot">© {new Date().getFullYear()} {site.name}</p>
@@ -404,6 +414,12 @@ const [firstWord, ...rest] = site.role.split(' ');
   .sheet__links a {
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+  /* several items on one line, wrapping on narrow screens */
+  .sheet__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px max(20px, calc(48 * var(--u)));
   }
   .sheet__foot {
     grid-column: 1 / -1;

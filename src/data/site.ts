@@ -9,9 +9,13 @@ export const site = {
 
   // Contact (the Connect sheet at the bottom of the home page)
   email: 'manumackal@gmail.com',
-  // Paste your profile URL here; the LinkedIn row on the Connect sheet appears once it's set
-  linkedin: '',
-  location: 'Trivandrum, India',
+  // Social links: one row on the Connect sheet, in this order
+  social: [
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/manu-mackal/' },
+    { label: 'Behance', href: 'https://www.behance.net/manumackal' },
+  ],
+  // Places, shown side by side on the Connect sheet
+  locations: ['Trivandrum, India', 'Dubai, UAE'],
 
   // Header navigation. The home page is one long scroll, so these jump to its stages.
   nav: [
