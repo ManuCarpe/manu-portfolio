@@ -103,6 +103,11 @@ export const frames: Record<string, [number, number]> = {
   p92: [1359.5, 1019.6],
   p93: [1464.0, 2227.0],
   p94: [1866.0, 1399.5],
+  p95: [1920.0, 1080.0],
+  p97: [498.5, 1079.0],
+  p98: [498.5, 1079.0],
+  p99: [498.5, 1079.0],
+  p100: [498.5, 1079.0],
 };
 
 export type Fx = 'reveal' | 'rise' | 'pop' | 'roll' | 'swapA' | 'swapB' | 'marquee';
@@ -150,12 +155,14 @@ export const ANIM: Record<string, Anim> = {
       [157.4, 259.7, 157.5, 71.1],
     ],
   },
+  // The card exports include their drop shadows, so these boxes are the exported images'
+  // bounds (matched against the Figma render), not the cards' own rects
   p16: {
     layers: [
-      ['c1', 137, 164.6, 195.6, 38.2, 'roll', 0],
-      ['c2', 102.4, 191, 264.7, 51.7, 'roll', 0.25],
-      ['c3', 66.1, 224.7, 336.5, 65.7, 'roll', 0.5],
-      ['c4', 37.3, 267.9, 393.9, 101.7, 'roll', 0.75],
+      ['c1', 117, 161, 220.5, 67, 'roll', 0],
+      ['c2', 75, 190, 296, 86.5, 'roll', 0.25],
+      ['c3', 31, 196, 376.5, 105.5, 'roll', 0.5],
+      ['c4', 0, 235, 436.5, 148.5, 'roll', 0.75],
     ],
   },
   // p27-strip is one loop of the logo strip: 16 items, 91px apart (cut just before the
